@@ -1,0 +1,17 @@
+apiVersion: k8qu.io/v1alpha1
+kind: Job
+metadata:
+  name: simple-job-2
+spec:
+  queue: "abc"
+  completed: false
+  failed: false
+  timeout: "20s"
+
+  templates:
+    - apiVersion: v1
+      kind: ConfigMap
+      metadata:
+        name: configmap-b
+      data:
+        a: b

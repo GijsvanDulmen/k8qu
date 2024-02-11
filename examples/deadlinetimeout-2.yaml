@@ -1,0 +1,16 @@
+apiVersion: k8qu.io/v1alpha1
+kind: Job
+metadata:
+  name: deadline-timeout
+spec:
+  queue: "deadline"
+  deadlineTimeout: "10s"
+
+  templates:
+    - apiVersion: v1
+      kind: ConfigMap
+      metadata:
+        generateName: configmap-b
+      data:
+        a: b
+

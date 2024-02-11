@@ -1,0 +1,15 @@
+apiVersion: k8qu.io/v1alpha1
+kind: Job
+metadata:
+  name: other-job-1
+spec:
+  queue: "queue1"
+  timeout: "3h"
+
+  templates:
+    - apiVersion: v1
+      kind: ConfigMap
+      metadata:
+        name: configmap-a
+      data:
+        a: b

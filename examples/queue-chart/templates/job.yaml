@@ -1,0 +1,44 @@
+apiVersion: k8qu.io/v1alpha1
+kind: Job
+metadata:
+  name: qc-{{ .Values.instance }}
+spec:
+  queue: {{ .Values.queue | default "queue-chart" }}
+  timeout: {{ .Values.timeout | default "3h" }}
+
+  {{- if eq (.Values.enableTts | default "yes") "yes" }}
+  ttlAfterFailedCompletion: {{ .Values.ttlAfterFailedCompletion | default "10s" }}
+  ttlAfterSuccesfullCompletion: {{ .Values.ttlAfterSuccesfullCompletion | default "10s" }}
+  {{- end }}
+
+  templates:
+    - apiVersion: batch/v1
+      kind: Job
+      metadata:
+        generateName: acm-
+        annotations:
+          origin: "[[JOBNAME]]"
+      spec:
+        ttlSecondsAfterFinished: 10
+        template:
+          spec:
+            serviceAccountName: auto-complete-me
+            initContainers:
+              - name: sleep-a-bit
+                image: bitnami/kubectl
+                command:
+                  - "sleep"
+                  - "5"
+            containers:
+              - name: kubectl
+                image: bitnami/kubectl
+                command:
+                  - "kubectl"
+                  - "patch"
+                  - "jobs.k8qu.io"
+                  - "qc-{{ .Values.instance }}"
+                  - "--type"
+                  - "merge"
+                  - "--patch"
+                  - '{"spec":{"completed":true}}'
+            restartPolicy: Never
