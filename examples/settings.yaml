@@ -1,0 +1,10 @@
+apiVersion: k8qu.io/v1alpha1
+kind: QueueSettings
+metadata:
+  name: parallel-two
+spec:
+  parallelism: 4
+  ttlAfterSuccesfullCompletion: "10s"
+  ttlAfterFailedCompletion: "10s"
+  deadlineTimeout: "15s"
+  timeout: "10s"

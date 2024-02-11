@@ -1,0 +1,23 @@
+apiVersion: k8qu.io/v1alpha1
+kind: Job
+metadata:
+  name: multi-resource-job
+spec:
+  queue: "multiq"
+  completed: false
+  failed: false
+  timeout: "20s"
+
+  templates:
+    - apiVersion: v1
+      kind: ConfigMap
+      metadata:
+        name: mr-1
+      data:
+        a: b
+    - apiVersion: v1
+      kind: ConfigMap
+      metadata:
+        name: mr-2
+      data:
+        a: b

@@ -1,0 +1,22 @@
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: k8qu-controller-role
+  namespace: {{ $.Release.Namespace }}
+  labels:
+    {{ template "k8qu.common-labels" . }}
+rules:
+  {{- range $resource := .Values.resourcesToCreate }}
+  - apiGroups:
+      - "{{ $resource.apiGroup }}"
+    resources:
+      - "{{ $resource.resource }}"
+    verbs:
+      - "create"
+  {{ end }}
+  - apiGroups:
+      - "k8qu.io"
+    resources:
+      - "*"
+    verbs:
+      - "*"

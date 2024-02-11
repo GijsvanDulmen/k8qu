@@ -1,0 +1,21 @@
+image:
+  registry: "ghcr.io"
+  repository: "gijsvandulmen/k8qu"
+  tag: "1.0"
+
+  pullPolicy: Always
+
+logLevel: "INFO"
+
+# use this to extend what the controller is able to create
+resourcesToCreate:
+  - apiGroup: ""
+    resource: "configmaps"
+
+resources:
+  limits:
+    memory: 500Mi
+    cpu: 1000m
+  requests:
+    memory: 50Mi
+    cpu: 30m
