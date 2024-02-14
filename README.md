@@ -1,6 +1,6 @@
 # K8qu - Queue your K8s stuff
 
-[![Go Report Card](https://goreportcard.com/report/github.com/GijsvanDulmen/kq8u)](https://goreportcard.com/report/github.com/GijsvanDulmen/kq8u)
+[![Go Report Card](https://goreportcard.com/report/github.com/GijsvanDulmen/k8qu)](https://goreportcard.com/report/github.com/GijsvanDulmen/k8qu)
 
 K8qu is a Kubernetes
 [Custom Resource Definition](https://kubernetes.io/docs/concepts/extend-kubernetes/api-extension/custom-resources/)
