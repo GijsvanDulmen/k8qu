@@ -7,10 +7,7 @@ image:
 
 logLevel: "INFO"
 
-# use this to extend what the controller is able to create
-resourcesToCreate:
-  - apiGroup: ""
-    resource: "configmaps"
+resourcesToCreate: []
 
 resources:
   limits:
