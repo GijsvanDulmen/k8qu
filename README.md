@@ -46,6 +46,9 @@ To get started with K8qu please see the examples and install the helm chart prov
 * [Examples](./examples)
 * [Helm chart](./helm/)
 
+The helm chart is also published in `https://raw.githubusercontent.com/GijsvanDulmen/k8qu-helm/main/`.
+You can use `helm repo add https://raw.githubusercontent.com/GijsvanDulmen/k8qu-helm/main/` to add it.
+
 ## Want to contribute?
 
 Great! Let us know by sending in a Github issue and/or PR. 
