@@ -1,10 +1,10 @@
 apiVersion: k8qu.io/v1alpha1
-kind: Job
+kind: QueueJob
 metadata:
   name: templates-on-timeout
 spec:
   queue: "templates-on-timeout"
-  timeout: "5s"
+  executionTimeout: "5s"
 
   templates:
     - apiVersion: v1
@@ -14,7 +14,7 @@ spec:
       data:
         a: b
 
-  onTimeoutTemplates:
+  onExecutionTimeoutTemplates:
     - apiVersion: v1
       kind: ConfigMap
       metadata:

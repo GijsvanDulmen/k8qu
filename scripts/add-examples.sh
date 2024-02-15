@@ -16,9 +16,9 @@ cd ..
 
 
 #kubectl --kubeconfig ${CONFIG} apply -f ./examples/settings.yaml
-#kubectl --kubeconfig ${CONFIG} apply -f ./examples/deadlinetimeout-1.yaml
+#kubectl --kubeconfig ${CONFIG} apply -f ./examples/max-time-inqueue-1.yaml
 #sleep 1
-#kubectl --kubeconfig ${CONFIG} apply -f ./examples/deadlinetimeout-2.yaml
+#kubectl --kubeconfig ${CONFIG} apply -f ./examples/max-time-inqueue-2.yaml
 #kubectl --kubeconfig ${CONFIG} apply -f ./examples/timeout.yaml
 
 #kubectl --kubeconfig ${CONFIG} apply -f ./examples/timeout-on-queue-settings.yaml

@@ -1,14 +1,14 @@
 apiVersion: k8qu.io/v1alpha1
-kind: Job
+kind: QueueJob
 metadata:
   name: qc-{{ .Values.instance }}
 spec:
   queue: {{ .Values.queue | default "queue-chart" }}
-  timeout: {{ .Values.timeout | default "3h" }}
+  executionTimeout: {{ .Values.timeout | default "3h" }}
 
   {{- if eq (.Values.enableTts | default "yes") "yes" }}
   ttlAfterFailedCompletion: {{ .Values.ttlAfterFailedCompletion | default "10s" }}
-  ttlAfterSuccesfullCompletion: {{ .Values.ttlAfterSuccesfullCompletion | default "10s" }}
+  ttlAfterSuccessfulCompletion: {{ .Values.ttlAfterSuccessfulCompletion | default "10s" }}
   {{- end }}
 
   templates:

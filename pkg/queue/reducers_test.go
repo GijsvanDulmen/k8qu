@@ -3,29 +3,29 @@ package queue
 import (
 	"errors"
 	"github.com/stretchr/testify/assert"
-	"k8qu/pkg/apis/k8qu/v1alpha1/job"
+	"k8qu/pkg/apis/k8qu/v1alpha1/queuejob"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"testing"
 	"time"
 )
 
 func TestProcessForCompletionToBeDeleted(t *testing.T) {
-	jb := job.CreateMockJob()
+	jb := queuejob.CreateMockJob()
 	jb.ObjectMeta.CreationTimestamp = metav1.NewTime(time.Now())
 
-	jb2 := job.CreateMockJob()
+	jb2 := queuejob.CreateMockJob()
 	now := time.Now()
 	jb2.ObjectMeta.CreationTimestamp = metav1.NewTime(now)
 	jb2.Status.CompletedAt = &now
 
-	jobs := []*job.Job{&jb, &jb2}
+	jobs := []*queuejob.QueueJob{&jb, &jb2}
 
 	resultJobs, err := ProcessForCompletedJobs(jobs, &JobUpdaterMock{}, Settings{
 		Parallelism:                  0,
-		TtlAfterSuccesfullCompletion: "",
+		TtlAfterSuccessfulCompletion: "",
 		TtlAfterFailedCompletion:     "",
-		Timeout:                      "",
-		DeadlineTimeout:              "",
+		ExecutionTimeout:             "",
+		MaxTimeInQueue:               "",
 	})
 
 	assert.Equal(t, 1, len(resultJobs))
@@ -33,65 +33,65 @@ func TestProcessForCompletionToBeDeleted(t *testing.T) {
 }
 
 func TestProcessForCompletionToBeDeletedErrored(t *testing.T) {
-	jb2 := job.CreateMockJob()
+	jb2 := queuejob.CreateMockJob()
 	duration, _ := time.ParseDuration("15s")
 	past := time.Now().Add(-duration)
 	trueV := true
 
 	jb2.ObjectMeta.CreationTimestamp = metav1.NewTime(past)
 	jb2.Status.CompletedAt = &past
-	jb2.Status.IsSuccesfull = &trueV
-	jb2.Spec.TtlAfterSuccesfullCompletion = "5s"
+	jb2.Status.IsSuccessful = &trueV
+	jb2.Spec.TtlAfterSuccessfulCompletion = "5s"
 
-	jobs := []*job.Job{&jb2}
+	jobs := []*queuejob.QueueJob{&jb2}
 
 	resultJobs, err := ProcessForCompletedJobs(jobs, &JobUpdaterMock{Result: errors.New("broken")}, Settings{
 		Parallelism:                  0,
-		TtlAfterSuccesfullCompletion: "",
+		TtlAfterSuccessfulCompletion: "",
 		TtlAfterFailedCompletion:     "",
-		Timeout:                      "",
-		DeadlineTimeout:              "",
+		ExecutionTimeout:             "",
+		MaxTimeInQueue:               "",
 	})
 
 	assert.Equal(t, 0, len(resultJobs))
 	assert.NotNil(t, err)
 }
 
-func TestProcessForDeadlineTimeout(t *testing.T) {
+func TestProcessForTooLongInQueue(t *testing.T) {
 	// past job
-	jb := job.CreateMockJob()
+	jb := queuejob.CreateMockJob()
 	duration, _ := time.ParseDuration("15s")
 	past := time.Now().Add(-duration)
 
-	jb.Spec.DeadlineTimeout = "5s"
+	jb.Spec.MaxTimeInQueue = "5s"
 	jb.ObjectMeta.CreationTimestamp = metav1.NewTime(past)
 
-	jobs := []*job.Job{&jb}
+	jobs := []*queuejob.QueueJob{&jb}
 
-	_, returnV := jb.IsDeadlinedTimeout("5s")
+	_, returnV := jb.IsTooLongInQueue("5s")
 	assert.True(t, returnV)
 
-	retJobs, err := ProcessForDeadlineTimeout(jobs, &JobUpdaterMock{}, "5s")
+	retJobs, err := ProcessForTooLongInQueue(jobs, &JobUpdaterMock{}, "5s")
 
 	assert.Equal(t, 0, len(retJobs))
 	assert.Nil(t, err)
 }
 
-func TestProcessForDeadlineTimeoutErrored(t *testing.T) {
+func TestProcessForMaxTimeInQueueErrored(t *testing.T) {
 	// past job
-	jb := job.CreateMockJob()
+	jb := queuejob.CreateMockJob()
 	duration, _ := time.ParseDuration("15s")
 	past := time.Now().Add(-duration)
 
-	jb.Spec.DeadlineTimeout = "5s"
+	jb.Spec.MaxTimeInQueue = "5s"
 	jb.ObjectMeta.CreationTimestamp = metav1.NewTime(past)
 
-	jobs := []*job.Job{&jb}
+	jobs := []*queuejob.QueueJob{&jb}
 
-	_, returnV := jb.IsDeadlinedTimeout("5s")
+	_, returnV := jb.IsTooLongInQueue("5s")
 	assert.True(t, returnV)
 
-	retJobs, err := ProcessForDeadlineTimeout(jobs, &JobUpdaterMock{Result: errors.New("broken")}, "5s")
+	retJobs, err := ProcessForTooLongInQueue(jobs, &JobUpdaterMock{Result: errors.New("broken")}, "5s")
 
 	assert.Equal(t, 0, len(retJobs))
 	assert.NotNil(t, err)
@@ -99,26 +99,26 @@ func TestProcessForDeadlineTimeoutErrored(t *testing.T) {
 
 func TestProcessForTimeouts(t *testing.T) {
 	// timed out job
-	timedOutJob := job.CreateMockJob()
+	timedOutJob := queuejob.CreateMockJob()
 	duration, _ := time.ParseDuration("15s")
 	past := time.Now().Add(-duration)
 
-	timedOutJob.Spec.Timeout = "5s"
+	timedOutJob.Spec.ExecutionTimeout = "5s"
 	timedOutJob.ObjectMeta.CreationTimestamp = metav1.NewTime(past)
 	timedOutJob.Status.StartedAt = &past
 
 	// running job
-	runningJob := job.CreateMockJob()
+	runningJob := queuejob.CreateMockJob()
 	runningJob.ObjectMeta.CreationTimestamp = metav1.NewTime(past)
 	runningJob.Status.StartedAt = &past
 	runningJob.Status.CompletedAt = nil
 
-	jobs := []*job.Job{&timedOutJob, &runningJob}
+	jobs := []*queuejob.QueueJob{&timedOutJob, &runningJob}
 
-	_, returnV := timedOutJob.IsTimedOut("")
+	_, returnV := timedOutJob.IsExecutionTimedOut("")
 	assert.True(t, returnV)
 
-	notRunningJobs, runningJobs, err := ProcessForTimeouts(jobs, &JobUpdaterMock{}, "")
+	notRunningJobs, runningJobs, err := ProcessForExecutionTimeouts(jobs, &JobUpdaterMock{}, "")
 
 	assert.Equal(t, 0, len(notRunningJobs))
 	assert.Equal(t, int64(1), runningJobs)
@@ -127,17 +127,17 @@ func TestProcessForTimeouts(t *testing.T) {
 
 func TestProcessForTimeoutsErrored(t *testing.T) {
 	// timed out job
-	timedOutJob := job.CreateMockJob()
+	timedOutJob := queuejob.CreateMockJob()
 	duration, _ := time.ParseDuration("15s")
 	past := time.Now().Add(-duration)
 
-	timedOutJob.Spec.Timeout = "5s"
+	timedOutJob.Spec.ExecutionTimeout = "5s"
 	timedOutJob.ObjectMeta.CreationTimestamp = metav1.NewTime(past)
 	timedOutJob.Status.StartedAt = &past
 
-	jobs := []*job.Job{&timedOutJob}
+	jobs := []*queuejob.QueueJob{&timedOutJob}
 
-	notRunningJobs, runningJobs, err := ProcessForTimeouts(jobs, &JobUpdaterMock{Result: errors.New("broken")}, "")
+	notRunningJobs, runningJobs, err := ProcessForExecutionTimeouts(jobs, &JobUpdaterMock{Result: errors.New("broken")}, "")
 
 	assert.Equal(t, 0, len(notRunningJobs))
 	assert.Equal(t, int64(0), runningJobs)

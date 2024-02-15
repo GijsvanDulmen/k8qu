@@ -2,7 +2,7 @@ package clientset
 
 import (
 	"github.com/rs/zerolog"
-	"k8qu/pkg/apis/k8qu/v1alpha1/job"
+	"k8qu/pkg/apis/k8qu/v1alpha1/queuejob"
 	"k8qu/pkg/clientset/v1alpha1"
 	logger "k8qu/pkg/log"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -13,13 +13,13 @@ import (
 
 var log = logger.Logger()
 
-type JobUpdater struct {
+type QueueJobUpdater struct {
 	Client          *v1alpha1.Client
 	ServerResources discovery.ServerResourcesInterface
 	Dynamic         dynamic.Interface
 }
 
-func (j *JobUpdater) StartJob(nextJob *job.Job) bool {
+func (j *QueueJobUpdater) StartJob(nextJob *queuejob.QueueJob) bool {
 	nextJob.MarkRunning()
 	err := j.UpdateJob(nextJob)
 	if err != nil {
@@ -31,55 +31,56 @@ func (j *JobUpdater) StartJob(nextJob *job.Job) bool {
 	err = CreateTemplates(nextJob.Spec.Templates, nextJob, j.ServerResources, j.Dynamic)
 	if err != nil {
 		log.WithLevel(zerolog.ErrorLevel).Msgf("%s - job marked as running but could not create resources %s", nextJob.GetQueueName(), nextJob.Name)
+		log.WithLevel(zerolog.ErrorLevel).Msg(err.Error())
 		log.WithLevel(zerolog.ErrorLevel).Err(err)
 		return false
 	}
 	return false
 }
 
-func (j *JobUpdater) UpdateJobForDeadlineTimeout(jb *job.Job) error {
+func (j *QueueJobUpdater) UpdateJobForMaxTimeInQueue(jb *queuejob.QueueJob) error {
 	err := j.UpdateJob(jb)
 	if err != nil {
 		return err
 	}
 
-	err = CreateTemplates(jb.Spec.OnDeadlineTimeoutTemplates, jb, j.ServerResources, j.Dynamic)
+	err = CreateTemplates(jb.Spec.OnTooLongInQueueTemplates, jb, j.ServerResources, j.Dynamic)
 	if err != nil {
 		return err
 	}
 	return nil
 }
 
-func (j *JobUpdater) UpdateJobForTimeout(jb *job.Job) error {
+func (j *QueueJobUpdater) UpdateJobForExecutionTimeout(jb *queuejob.QueueJob) error {
 	err := j.UpdateJob(jb)
 	if err != nil {
 		return err
 	}
 
-	err = CreateTemplates(jb.Spec.OnTimeoutTemplates, jb, j.ServerResources, j.Dynamic)
+	err = CreateTemplates(jb.Spec.OnExecutionTimeoutTemplates, jb, j.ServerResources, j.Dynamic)
 	if err != nil {
 		return err
 	}
 	return nil
 }
 
-func (j *JobUpdater) DeleteJob(jb *job.Job) error {
-	err := j.Client.Job(jb.Namespace).Delete(jb, metav1.DeleteOptions{})
+func (j *QueueJobUpdater) DeleteJob(jb *queuejob.QueueJob) error {
+	err := j.Client.QueueJob(jb.Namespace).Delete(jb, metav1.DeleteOptions{})
 	if err != nil {
 		return err
 	}
 	return nil
 }
 
-func (j *JobUpdater) UpdateJob(jb *job.Job) error {
-	_, err := j.Client.Job(jb.Namespace).Update(jb, metav1.UpdateOptions{})
+func (j *QueueJobUpdater) UpdateJob(jb *queuejob.QueueJob) error {
+	_, err := j.Client.QueueJob(jb.Namespace).Update(jb, metav1.UpdateOptions{})
 	if err != nil {
 		return err
 	}
 	return nil
 }
 
-func CreateTemplates(resources []*runtime.RawExtension, jb *job.Job, c discovery.ServerResourcesInterface, dc dynamic.Interface) error {
+func CreateTemplates(resources []*runtime.RawExtension, jb *queuejob.QueueJob, c discovery.ServerResourcesInterface, dc dynamic.Interface) error {
 	if resources != nil {
 		for _, template := range resources {
 			resource := *template

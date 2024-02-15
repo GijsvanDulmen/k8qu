@@ -4,7 +4,7 @@ metadata:
   name: parallel-two
 spec:
   parallelism: 4
-  ttlAfterSuccesfullCompletion: "10s"
+  ttlAfterSuccessfulCompletion: "10s"
   ttlAfterFailedCompletion: "10s"
-  deadlineTimeout: "15s"
-  timeout: "10s"
+  maxTimeInQueue: "15s"
+  executionTimeout: "10s"

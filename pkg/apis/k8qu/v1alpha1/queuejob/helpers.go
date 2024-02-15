@@ -1,4 +1,4 @@
-package job
+package queuejob
 
 import (
 	"fmt"
@@ -6,25 +6,25 @@ import (
 )
 
 var timedOutMessage = "Timed out"
-var deadlinedMessage = "Deadlined"
+var maxTimeInQueueMessage = "Too long in queue"
 var markedCompletedMessage = "Marked completed"
 var markedFailedMessage = "Marked failed"
 
-func (jb *Job) IsRunning() bool {
+func (jb *QueueJob) IsRunning() bool {
 	return jb.Status.StartedAt != nil && jb.Status.CompletedAt == nil
 }
 
-func (jb *Job) IsCompleted() bool {
+func (jb *QueueJob) IsCompleted() bool {
 	return jb.Status.CompletedAt != nil
 }
 
-func (jb *Job) IsCompletedAndCanBeDeleted(ttsSuccess string, ttsFailed string) (error, bool) {
-	ttlAfterSuccesfullCompletion := jb.Spec.TtlAfterSuccesfullCompletion
-	if jb.Spec.TtlAfterSuccesfullCompletion != "" {
-		ttlAfterSuccesfullCompletion = jb.Spec.TtlAfterSuccesfullCompletion
+func (jb *QueueJob) IsCompletedAndCanBeDeleted(ttsSuccess string, ttsFailed string) (error, bool) {
+	ttlAfterSuccessfulCompletion := jb.Spec.TtlAfterSuccessfulCompletion
+	if jb.Spec.TtlAfterSuccessfulCompletion != "" {
+		ttlAfterSuccessfulCompletion = jb.Spec.TtlAfterSuccessfulCompletion
 	}
 	if ttsSuccess != "" {
-		ttlAfterSuccesfullCompletion = ttsSuccess
+		ttlAfterSuccessfulCompletion = ttsSuccess
 	}
 
 	ttlAfterFailedCompletion := jb.Spec.TtlAfterFailedCompletion
@@ -35,17 +35,17 @@ func (jb *Job) IsCompletedAndCanBeDeleted(ttsSuccess string, ttsFailed string) (
 		ttlAfterFailedCompletion = ttsFailed
 	}
 
-	if jb.Status.CompletedAt != nil && jb.Status.IsSuccesfull != nil {
-		if ttlAfterSuccesfullCompletion != "" &&
-			(*jb.Status.IsSuccesfull) {
-			timeDuration, err := time.ParseDuration(ttlAfterSuccesfullCompletion)
+	if jb.Status.CompletedAt != nil && jb.Status.IsSuccessful != nil {
+		if ttlAfterSuccessfulCompletion != "" &&
+			(*jb.Status.IsSuccessful) {
+			timeDuration, err := time.ParseDuration(ttlAfterSuccessfulCompletion)
 
 			if err != nil {
 				return err, false
 			}
 			return nil, time.Now().After(jb.Status.CompletedAt.Add(timeDuration))
 		} else if ttlAfterFailedCompletion != "" &&
-			!(*jb.Status.IsSuccesfull) {
+			!(*jb.Status.IsSuccessful) {
 			timeDuration, err := time.ParseDuration(ttlAfterFailedCompletion)
 
 			if err != nil {
@@ -57,7 +57,7 @@ func (jb *Job) IsCompletedAndCanBeDeleted(ttsSuccess string, ttsFailed string) (
 	return nil, false
 }
 
-func (jb *Job) IsTimedOut(globalTimeout string) (error, bool) {
+func (jb *QueueJob) IsExecutionTimedOut(globalExecutionTimeout string) (error, bool) {
 	if jb.Status.StartedAt == nil {
 		return nil, false
 	}
@@ -66,13 +66,13 @@ func (jb *Job) IsTimedOut(globalTimeout string) (error, bool) {
 		return nil, false
 	}
 
-	timeout := jb.Spec.Timeout
-	if globalTimeout != "" {
-		timeout = globalTimeout
+	executionTimeout := jb.Spec.ExecutionTimeout
+	if globalExecutionTimeout != "" {
+		executionTimeout = globalExecutionTimeout
 	}
 
-	if timeout != "" {
-		timeDuration, err := time.ParseDuration(timeout)
+	if executionTimeout != "" {
+		timeDuration, err := time.ParseDuration(executionTimeout)
 
 		if err != nil {
 			return err, false
@@ -83,18 +83,18 @@ func (jb *Job) IsTimedOut(globalTimeout string) (error, bool) {
 	return nil, false
 }
 
-func (jb *Job) IsDeadlinedTimeout(globalDeadlineTimeout string) (error, bool) {
+func (jb *QueueJob) IsTooLongInQueue(globalMaxTimeInQueue string) (error, bool) {
 	if jb.Status.StartedAt != nil {
 		return nil, false
 	}
 
-	deadlineTimeout := jb.Spec.DeadlineTimeout
-	if globalDeadlineTimeout != "" {
-		deadlineTimeout = globalDeadlineTimeout
+	maxTimeInQueue := jb.Spec.MaxTimeInQueue
+	if globalMaxTimeInQueue != "" {
+		maxTimeInQueue = globalMaxTimeInQueue
 	}
 
-	if deadlineTimeout != "" {
-		timeDuration, err := time.ParseDuration(deadlineTimeout)
+	if maxTimeInQueue != "" {
+		timeDuration, err := time.ParseDuration(maxTimeInQueue)
 
 		if err != nil {
 			return err, false
@@ -105,45 +105,45 @@ func (jb *Job) IsDeadlinedTimeout(globalDeadlineTimeout string) (error, bool) {
 	return nil, false
 }
 
-func (jb *Job) MarkTimedOut() {
+func (jb *QueueJob) MarkTimedOut() {
 	now := time.Now()
 	falseBool := false
 
 	jb.Status.CompletedAt = &now
-	jb.Status.IsSuccesfull = &falseBool
+	jb.Status.IsSuccessful = &falseBool
 	jb.Status.Outcome = &timedOutMessage
 }
 
-func (jb *Job) MarkDeadlinedTimeout() {
+func (jb *QueueJob) MarkTooLongInQueue() {
 	now := time.Now()
 	falseBool := false
 
 	jb.Status.CompletedAt = &now
-	jb.Status.IsSuccesfull = &falseBool
-	jb.Status.Outcome = &deadlinedMessage
+	jb.Status.IsSuccessful = &falseBool
+	jb.Status.Outcome = &maxTimeInQueueMessage
 }
 
-func (jb *Job) MarkRunning() {
+func (jb *QueueJob) MarkRunning() {
 	now := time.Now()
 	jb.Status.StartedAt = &now
 }
 
-func (jb *Job) MarkCompleted() {
+func (jb *QueueJob) MarkCompleted() {
 	now := time.Now()
 	trueBool := true
 	jb.Status.CompletedAt = &now
-	jb.Status.IsSuccesfull = &trueBool
+	jb.Status.IsSuccessful = &trueBool
 	jb.Status.Outcome = &markedCompletedMessage
 }
 
-func (jb *Job) MarkFailed() {
+func (jb *QueueJob) MarkFailed() {
 	now := time.Now()
 	falseBool := false
 	jb.Status.CompletedAt = &now
-	jb.Status.IsSuccesfull = &falseBool
+	jb.Status.IsSuccessful = &falseBool
 	jb.Status.Outcome = &markedFailedMessage
 }
 
-func (jb *Job) GetQueueName() string {
+func (jb *QueueJob) GetQueueName() string {
 	return fmt.Sprintf("%s.%s", jb.Namespace, jb.Spec.Queue)
 }

@@ -1,14 +1,14 @@
 package queue
 
 import (
-	"k8qu/pkg/apis/k8qu/v1alpha1/job"
+	"k8qu/pkg/apis/k8qu/v1alpha1/queuejob"
 	"testing"
 )
 
 func TestAddQueue(t *testing.T) {
 	queues := NewQueues()
 
-	jb := job.CreateMockJob()
+	jb := queuejob.CreateMockJob()
 	jb.Spec.Queue = "a"
 	jb.ObjectMeta.Namespace = "ns"
 
@@ -31,11 +31,11 @@ func TestAddQueue(t *testing.T) {
 			t.Fail()
 		}
 
-		if queue.Settings.DeadlineTimeout != "" {
+		if queue.Settings.MaxTimeInQueue != "" {
 			t.Fail()
 		}
 
-		if queue.Settings.Timeout != "" {
+		if queue.Settings.ExecutionTimeout != "" {
 			t.Fail()
 		}
 	} else {
@@ -46,16 +46,16 @@ func TestAddQueue(t *testing.T) {
 func TestAddQueueWithQueueSpec(t *testing.T) {
 	queues := NewQueues()
 
-	jb := job.CreateMockJob()
+	jb := queuejob.CreateMockJob()
 	jb.Spec.Queue = "a"
 	jb.ObjectMeta.Namespace = "ns"
 
 	queues.AddQueue("ns.a", Settings{
 		Parallelism:                  2,
-		TtlAfterSuccesfullCompletion: "2s",
+		TtlAfterSuccessfulCompletion: "2s",
 		TtlAfterFailedCompletion:     "2s",
-		Timeout:                      "2s",
-		DeadlineTimeout:              "2s",
+		ExecutionTimeout:             "2s",
+		MaxTimeInQueue:               "2s",
 	})
 	queues.AddJob(&jb)
 
@@ -76,11 +76,11 @@ func TestAddQueueWithQueueSpec(t *testing.T) {
 			t.Fail()
 		}
 
-		if queue.Settings.DeadlineTimeout != "2s" {
+		if queue.Settings.MaxTimeInQueue != "2s" {
 			t.Fail()
 		}
 
-		if queue.Settings.Timeout != "2s" {
+		if queue.Settings.ExecutionTimeout != "2s" {
 			t.Fail()
 		}
 	} else {

@@ -7,15 +7,15 @@ import (
 	"k8s.io/client-go/rest"
 )
 
-type JobClientInterface interface {
-	Job(namespace string) JobInterface
+type QueueJobClientInterface interface {
+	QueueJob(namespace string) QueueJobInterface
 }
 
 type Client struct {
 	restClient rest.Interface
 }
 
-func NewForJob(c *rest.Config) (*Client, error) {
+func NewForQueueJob(c *rest.Config) (*Client, error) {
 	config := *c
 	config.ContentConfig.GroupVersion = &schema.GroupVersion{Group: k8qucontroller.GroupName, Version: "v1alpha1"}
 	config.APIPath = "/apis"
@@ -30,8 +30,8 @@ func NewForJob(c *rest.Config) (*Client, error) {
 	return &Client{restClient: client}, nil
 }
 
-func (c *Client) Job(namespace string) JobInterface {
-	return &jobClient{
+func (c *Client) QueueJob(namespace string) QueueJobInterface {
+	return &queueJobClient{
 		restClient: c.restClient,
 		ns:         namespace,
 	}

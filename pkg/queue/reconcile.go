@@ -2,7 +2,7 @@ package queue
 
 import (
 	"github.com/rs/zerolog"
-	"k8qu/pkg/apis/k8qu/v1alpha1/job"
+	"k8qu/pkg/apis/k8qu/v1alpha1/queuejob"
 	"sort"
 )
 
@@ -10,9 +10,9 @@ func (q *Queue) Reconcile(jobUpdater JobUpdater) {
 	log.WithLevel(zerolog.DebugLevel).Msgf("%s - total jobs %d", q.Name, len(q.Jobs))
 	log.WithLevel(zerolog.DebugLevel).Msgf("%s - parallelism %d", q.Name, q.Settings.Parallelism)
 
-	toBeDoneJobs, err := ProcessForDeadlineTimeout(q.Jobs, jobUpdater, q.Settings.DeadlineTimeout)
+	toBeDoneJobs, err := ProcessForTooLongInQueue(q.Jobs, jobUpdater, q.Settings.MaxTimeInQueue)
 	if err != nil {
-		q.DebugLog("could not process for deadline timeout")
+		q.DebugLog("could not process for max time in queue")
 		q.DebugErr(err)
 		return
 	}
@@ -27,9 +27,9 @@ func (q *Queue) Reconcile(jobUpdater JobUpdater) {
 	log.WithLevel(zerolog.DebugLevel).Msgf("%s - jobs still running or need to run %d", q.Name, len(toBeDoneJobs))
 
 	// get not running jobs
-	notRunningJobs, numberOfRunning, err := ProcessForTimeouts(toBeDoneJobs, jobUpdater, q.Settings.Timeout)
+	notRunningJobs, numberOfRunning, err := ProcessForExecutionTimeouts(toBeDoneJobs, jobUpdater, q.Settings.ExecutionTimeout)
 	if err != nil {
-		q.DebugLog("could not process for timeouts")
+		q.DebugLog("could not process for execution timeouts")
 		q.DebugErr(err)
 		return
 	}
@@ -46,7 +46,7 @@ func (q *Queue) Reconcile(jobUpdater JobUpdater) {
 	}
 }
 
-func GetToStartJob(notRunningJobs []*job.Job, parallelism int64, numberOfRunning int64) []*job.Job {
+func GetToStartJob(notRunningJobs []*queuejob.QueueJob, parallelism int64, numberOfRunning int64) []*queuejob.QueueJob {
 	// sort by creation timestamp
 	// equal = original order
 	sort.SliceStable(notRunningJobs, func(i, j int) bool {
@@ -57,7 +57,7 @@ func GetToStartJob(notRunningJobs []*job.Job, parallelism int64, numberOfRunning
 
 	jobsLength := len(notRunningJobs)
 
-	var startJobs []*job.Job
+	var startJobs []*queuejob.QueueJob
 	if jobsLength > 0 {
 		for i := int64(0); i < numberToStart; i++ {
 			if int64(jobsLength) > i {

@@ -2,7 +2,7 @@ package queue
 
 import (
 	"github.com/stretchr/testify/assert"
-	"k8qu/pkg/apis/k8qu/v1alpha1/job"
+	"k8qu/pkg/apis/k8qu/v1alpha1/queuejob"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"testing"
 	"time"
@@ -10,19 +10,19 @@ import (
 
 func TestToStartJob(t *testing.T) {
 	// first job
-	firstJob := job.CreateMockJob()
+	firstJob := queuejob.CreateMockJob()
 	duration, _ := time.ParseDuration("5s")
 	firstJob.ObjectMeta.CreationTimestamp = metav1.NewTime(time.Now().Add(-duration))
 	firstJob.ObjectMeta.Name = "first"
 
 	// second job
-	secondJob := job.CreateMockJob()
+	secondJob := queuejob.CreateMockJob()
 	secondDuration, _ := time.ParseDuration("10s")
 	secondJob.ObjectMeta.CreationTimestamp = metav1.NewTime(time.Now().Add(-secondDuration))
 	secondJob.ObjectMeta.Name = "second"
 
 	// wrong order
-	jobs := []*job.Job{&firstJob, &secondJob}
+	jobs := []*queuejob.QueueJob{&firstJob, &secondJob}
 
 	toStartJob := GetToStartJob(jobs, 1, 0)
 
@@ -32,19 +32,19 @@ func TestToStartJob(t *testing.T) {
 
 func TestToStartJobWithMultipleParallism(t *testing.T) {
 	// first job
-	firstJob := job.CreateMockJob()
+	firstJob := queuejob.CreateMockJob()
 	duration, _ := time.ParseDuration("5s")
 	firstJob.ObjectMeta.CreationTimestamp = metav1.NewTime(time.Now().Add(-duration))
 	firstJob.ObjectMeta.Name = "first"
 
 	// second job
-	secondJob := job.CreateMockJob()
+	secondJob := queuejob.CreateMockJob()
 	secondDuration, _ := time.ParseDuration("10s")
 	secondJob.ObjectMeta.CreationTimestamp = metav1.NewTime(time.Now().Add(-secondDuration))
 	secondJob.ObjectMeta.Name = "second"
 
 	// wrong order
-	jobs := []*job.Job{&firstJob, &secondJob}
+	jobs := []*queuejob.QueueJob{&firstJob, &secondJob}
 
 	toStartJob := GetToStartJob(jobs, 2, 0)
 
@@ -55,19 +55,19 @@ func TestToStartJobWithMultipleParallism(t *testing.T) {
 
 func TestToStartJobWithMultipleParallismWithRunning(t *testing.T) {
 	// first job
-	firstJob := job.CreateMockJob()
+	firstJob := queuejob.CreateMockJob()
 	duration, _ := time.ParseDuration("5s")
 	firstJob.ObjectMeta.CreationTimestamp = metav1.NewTime(time.Now().Add(-duration))
 	firstJob.ObjectMeta.Name = "first"
 
 	// second job
-	secondJob := job.CreateMockJob()
+	secondJob := queuejob.CreateMockJob()
 	secondDuration, _ := time.ParseDuration("10s")
 	secondJob.ObjectMeta.CreationTimestamp = metav1.NewTime(time.Now().Add(-secondDuration))
 	secondJob.ObjectMeta.Name = "second"
 
 	// wrong order
-	jobs := []*job.Job{&firstJob, &secondJob}
+	jobs := []*queuejob.QueueJob{&firstJob, &secondJob}
 
 	toStartJob := GetToStartJob(jobs, 2, 1)
 

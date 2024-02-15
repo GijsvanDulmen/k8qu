@@ -1,4 +1,4 @@
-package job
+package queuejob
 
 import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -6,7 +6,7 @@ import (
 	"time"
 )
 
-type Job struct {
+type QueueJob struct {
 	metav1.TypeMeta   `json:",inline"`
 	metav1.ObjectMeta `json:"metadata,omitempty"`
 
@@ -16,28 +16,28 @@ type Job struct {
 
 type Spec struct {
 	Queue                        string `json:"queue"`
-	Timeout                      string `json:"timeout"`
-	DeadlineTimeout              string `json:"deadlineTimeout"`
+	ExecutionTimeout             string `json:"executionTimeout"`
+	MaxTimeInQueue               string `json:"maxTimeInQueue"`
 	Completed                    *bool  `json:"completed,omitempty"`
 	Failed                       *bool  `json:"failed,omitempty"`
-	TtlAfterSuccesfullCompletion string `json:"ttlAfterSuccesfullCompletion,omitempty"`
+	TtlAfterSuccessfulCompletion string `json:"ttlAfterSuccessfulCompletion,omitempty"`
 	TtlAfterFailedCompletion     string `json:"ttlAfterFailedCompletion,omitempty"`
 
-	Templates                  []*runtime.RawExtension `json:"templates,omitempty"`
-	OnDeadlineTimeoutTemplates []*runtime.RawExtension `json:"onDeadlineTimeoutTemplates,omitempty"`
-	OnTimeoutTemplates         []*runtime.RawExtension `json:"onTimeoutTemplates,omitempty"`
+	Templates                   []*runtime.RawExtension `json:"templates,omitempty"`
+	OnTooLongInQueueTemplates   []*runtime.RawExtension `json:"onTooLongInQueueTemplates,omitempty"`
+	OnExecutionTimeoutTemplates []*runtime.RawExtension `json:"onExecutionTimeoutTemplates,omitempty"`
 }
 
 type Status struct {
 	CompletedAt  *time.Time `json:"completedAt,omitempty"`
 	StartedAt    *time.Time `json:"startedAt,omitempty"`
-	IsSuccesfull *bool      `json:"isSuccessfull,omitempty"`
+	IsSuccessful *bool      `json:"isSuccessful,omitempty"`
 	Outcome      *string    `json:"outcome"`
 }
 
-type JobList struct {
+type QueueJobList struct {
 	metav1.TypeMeta `json:",inline"`
 	metav1.ListMeta `json:"metadata"`
 
-	Items []Job `json:"items"`
+	Items []QueueJob `json:"items"`
 }

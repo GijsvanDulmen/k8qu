@@ -25,13 +25,13 @@ So how does it look like? Well... like this!
 
 ```yaml
 apiVersion: k8qu.io/v1alpha1
-kind: Job
+kind: QueueJob
 metadata:
   name: simple-job
 spec:
   queue: "abc"
-  timeout: "20s"
-
+  executionTimeout: "20s"
+  
   templates:
     - apiVersion: v1
       kind: Pod

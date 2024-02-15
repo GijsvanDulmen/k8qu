@@ -1,10 +1,10 @@
 apiVersion: k8qu.io/v1alpha1
-kind: Job
+kind: QueueJob
 metadata:
-  name: deadline-timeout
+  name: max-time-in-queue
 spec:
-  queue: "deadline"
-  deadlineTimeout: "10s"
+  queue: "max-time-in-queue"
+  maxTimeInQueue: "10s"
 
   templates:
     - apiVersion: v1

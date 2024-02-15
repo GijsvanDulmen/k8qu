@@ -12,12 +12,12 @@ spec:
         - name: Parallelism
           type: integer
           jsonPath: .spec.parallelism
-        - name: ttlAfterSuccesfullCompletion
-          type: integer
-          jsonPath: .spec.ttlAfterSuccesfullCompletion
-        - name: ttlAfterFailedCompletion
-          type: integer
-          jsonPath: .spec.ttlAfterFailedCompletion
+        - name: executionTimeout
+          type: string
+          jsonPath: .spec.executionTimeout
+        - name: maxTimeInQueue
+          type: string
+          jsonPath: .spec.maxTimeInQueue
       schema:
         openAPIV3Schema:
           type: object
@@ -27,13 +27,13 @@ spec:
               properties:
                 parallelism:
                   type: integer
-                ttlAfterSuccesfullCompletion:
+                ttlAfterSuccessfulCompletion:
                   type: string
                 ttlAfterFailedCompletion:
                   type: string
-                timeout:
+                executionTimeout:
                   type: string
-                deadlineTimeout:
+                maxTimeInQueue:
                   type: string
   names:
     kind: QueueSettings

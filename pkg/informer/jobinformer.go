@@ -6,12 +6,12 @@ import (
 )
 
 type JobInformer struct {
-	clientSet           v1alpha1.JobClientInterface
+	clientSet           v1alpha1.QueueJobClientInterface
 	coreClientSet       *kubernetes.Clientset
 	jobReconcileRequest JobReconcileRequest
 }
 
-func NewJobInformer(clientSet v1alpha1.JobClientInterface, coreClientSet *kubernetes.Clientset, jobReconcileRequest JobReconcileRequest) (informer *JobInformer) {
+func NewJobInformer(clientSet v1alpha1.QueueJobClientInterface, coreClientSet *kubernetes.Clientset, jobReconcileRequest JobReconcileRequest) (informer *JobInformer) {
 	return &JobInformer{
 		clientSet:           clientSet,
 		coreClientSet:       coreClientSet,

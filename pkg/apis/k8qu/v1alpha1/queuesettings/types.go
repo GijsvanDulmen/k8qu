@@ -13,10 +13,10 @@ type QueueSettings struct {
 
 type Spec struct {
 	Parallelism                  int64  `json:"parallelism"`
-	TtlAfterSuccesfullCompletion string `json:"ttlAfterSuccesfullCompletion"`
+	TtlAfterSuccessfulCompletion string `json:"ttlAfterSuccessfulCompletion"`
 	TtlAfterFailedCompletion     string `json:"ttlAfterFailedCompletion"`
-	Timeout                      string `json:"timeout"`
-	DeadlineTimeout              string `json:"deadlineTimeout"`
+	ExecutionTimeout             string `json:"executionTimeout"`
+	MaxTimeInQueue               string `json:"maxTimeInQueue"`
 }
 
 type QueueSettingsList struct {

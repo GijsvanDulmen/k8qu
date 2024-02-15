@@ -2,7 +2,7 @@ package informer
 
 import (
 	"github.com/rs/zerolog"
-	"k8qu/pkg/apis/k8qu/v1alpha1/job"
+	"k8qu/pkg/apis/k8qu/v1alpha1/queuejob"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/util/wait"
@@ -16,31 +16,31 @@ func (informer *JobInformer) WatchJob() (cache.Store, cache.Controller) {
 	store, controller := cache.NewInformer(
 		&cache.ListWatch{
 			ListFunc: func(lo metav1.ListOptions) (result runtime.Object, err error) {
-				return informer.clientSet.Job("").List(lo)
+				return informer.clientSet.QueueJob("").List(lo)
 			},
 			WatchFunc: func(lo metav1.ListOptions) (watch.Interface, error) {
-				return informer.clientSet.Job("").Watch(lo)
+				return informer.clientSet.QueueJob("").Watch(lo)
 			},
 		},
-		&job.Job{},
+		&queuejob.QueueJob{},
 		1*time.Minute,
 		cache.ResourceEventHandlerFuncs{
 			AddFunc: func(obj interface{}) {
 				var cs = obj
-				typed := cs.(*job.Job)
+				typed := cs.(*queuejob.QueueJob)
 				LogForJob(*typed, "added", zerolog.DebugLevel)
 				informer.ReconcileJob(typed)
 			},
 			UpdateFunc: func(old, new interface{}) {
 				var cs = new
-				typed := cs.(*job.Job)
+				typed := cs.(*queuejob.QueueJob)
 				LogForJob(*typed, "updated", zerolog.DebugLevel)
 
 				informer.ReconcileJob(typed)
 			},
 			DeleteFunc: func(obj interface{}) {
 				var cs = obj
-				typed := cs.(*job.Job)
+				typed := cs.(*queuejob.QueueJob)
 				LogForJob(*typed, "deleted", zerolog.DebugLevel)
 			},
 		},
@@ -50,13 +50,13 @@ func (informer *JobInformer) WatchJob() (cache.Store, cache.Controller) {
 	return store, controller
 }
 
-func (informer *JobInformer) ReconcileJob(cs *job.Job) {
+func (informer *JobInformer) ReconcileJob(cs *queuejob.QueueJob) {
 	if cs.ObjectMeta.DeletionTimestamp.IsZero() {
 		if !controllerutil.ContainsFinalizer(cs, finalizerName) {
 			LogForJob(*cs, "adding finalizer", zerolog.DebugLevel)
 			controllerutil.AddFinalizer(cs, finalizerName)
 
-			_, err := informer.clientSet.Job(cs.ObjectMeta.Namespace).Update(cs, metav1.UpdateOptions{})
+			_, err := informer.clientSet.QueueJob(cs.ObjectMeta.Namespace).Update(cs, metav1.UpdateOptions{})
 			if err != nil {
 				LogForJob(*cs, err.Error(), zerolog.ErrorLevel)
 			}
@@ -67,7 +67,7 @@ func (informer *JobInformer) ReconcileJob(cs *job.Job) {
 		completed := cs.Spec.Completed
 		if (completed != nil) && *completed && cs.Status.CompletedAt == nil {
 			cs.MarkCompleted()
-			_, err := informer.clientSet.Job(cs.ObjectMeta.Namespace).Update(cs, metav1.UpdateOptions{})
+			_, err := informer.clientSet.QueueJob(cs.ObjectMeta.Namespace).Update(cs, metav1.UpdateOptions{})
 			if err != nil {
 				LogForJob(*cs, err.Error(), zerolog.ErrorLevel)
 			}
@@ -77,7 +77,7 @@ func (informer *JobInformer) ReconcileJob(cs *job.Job) {
 		failed := cs.Spec.Failed
 		if (failed != nil) && *failed && cs.Status.CompletedAt == nil {
 			cs.MarkFailed()
-			_, err := informer.clientSet.Job(cs.ObjectMeta.Namespace).Update(cs, metav1.UpdateOptions{})
+			_, err := informer.clientSet.QueueJob(cs.ObjectMeta.Namespace).Update(cs, metav1.UpdateOptions{})
 			if err != nil {
 				LogForJob(*cs, err.Error(), zerolog.ErrorLevel)
 			}
@@ -90,7 +90,7 @@ func (informer *JobInformer) ReconcileJob(cs *job.Job) {
 
 			LogForJob(*cs, "removing finalizer", zerolog.DebugLevel)
 
-			_, err := informer.clientSet.Job(cs.ObjectMeta.Namespace).Update(cs, metav1.UpdateOptions{})
+			_, err := informer.clientSet.QueueJob(cs.ObjectMeta.Namespace).Update(cs, metav1.UpdateOptions{})
 			if err != nil {
 				LogForJob(*cs, "could not remove finalizer", zerolog.ErrorLevel)
 				LogForJob(*cs, err.Error(), zerolog.ErrorLevel)
@@ -99,6 +99,6 @@ func (informer *JobInformer) ReconcileJob(cs *job.Job) {
 	}
 }
 
-func LogForJob(j job.Job, s string, level zerolog.Level) {
+func LogForJob(j queuejob.QueueJob, s string, level zerolog.Level) {
 	log.WithLevel(level).Msgf("job %s/%s log: %s", j.Namespace, j.Name, s)
 }

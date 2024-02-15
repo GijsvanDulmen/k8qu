@@ -1,10 +1,10 @@
 apiVersion: k8qu.io/v1alpha1
-kind: Job
+kind: QueueJob
 metadata:
   name: other-job-1
 spec:
   queue: "queue1"
-  timeout: "3h"
+  executionTimeout: "3h"
 
   templates:
     - apiVersion: v1

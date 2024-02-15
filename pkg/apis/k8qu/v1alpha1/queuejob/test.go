@@ -1,12 +1,12 @@
-package job
+package queuejob
 
 import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"time"
 )
 
-func CreateMockJob() Job {
-	return Job{
+func CreateMockJob() QueueJob {
+	return QueueJob{
 		ObjectMeta: metav1.ObjectMeta{
 			Name:                       "mock",
 			GenerateName:               "",
@@ -26,11 +26,11 @@ func CreateMockJob() Job {
 		},
 		Spec: Spec{
 			Queue:                        "queue",
-			Timeout:                      "",
-			DeadlineTimeout:              "",
+			ExecutionTimeout:             "",
+			MaxTimeInQueue:               "",
 			Completed:                    nil,
 			Failed:                       nil,
-			TtlAfterSuccesfullCompletion: "",
+			TtlAfterSuccessfulCompletion: "",
 			TtlAfterFailedCompletion:     "",
 			Templates:                    nil,
 		},

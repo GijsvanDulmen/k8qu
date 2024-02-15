@@ -4,7 +4,7 @@ import (
 	"context"
 	"fmt"
 	"github.com/rs/zerolog"
-	"k8qu/pkg/apis/k8qu/v1alpha1/job"
+	"k8qu/pkg/apis/k8qu/v1alpha1/queuejob"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 	"k8s.io/apimachinery/pkg/runtime"
@@ -32,7 +32,7 @@ func addLabels(us *unstructured.Unstructured, labelsToAdd map[string]string) (*u
 	return us, nil
 }
 
-func CreateResource(jb *job.Job, raw runtime.RawExtension, c discovery.ServerResourcesInterface, dc dynamic.Interface) error {
+func CreateResource(jb *queuejob.QueueJob, raw runtime.RawExtension, c discovery.ServerResourcesInterface, dc dynamic.Interface) error {
 
 	// replacements
 	replaced := strings.ReplaceAll(string(raw.Raw), "[[JOBNAME]]", jb.ObjectMeta.Name)

@@ -1,7 +1,7 @@
 apiVersion: apiextensions.k8s.io/v1
 kind: CustomResourceDefinition
 metadata:
-  name: jobs.k8qu.io
+  name: queuejobs.k8qu.io
 spec:
   group: k8qu.io
   versions:
@@ -36,11 +36,11 @@ spec:
                   type: boolean
                 failed:
                   type: boolean
-                timeout:
+                executionTimeout:
                   type: string
-                deadlineTimeout:
+                maxTimeInQueue:
                   type: string
-                ttlAfterSuccesfullCompletion:
+                ttlAfterSuccessfulCompletion:
                   type: string
                 ttlAfterFailedCompletion:
                   type: string
@@ -50,13 +50,13 @@ spec:
                     type: object
                     x-kubernetes-embedded-resource: true
                     x-kubernetes-preserve-unknown-fields: true
-                onTimeoutTemplates:
+                onExecutionTimeoutTemplates:
                   type: array
                   items:
                     type: object
                     x-kubernetes-embedded-resource: true
                     x-kubernetes-preserve-unknown-fields: true
-                onDeadlineTimeoutTemplates:
+                onTooLongInQueueTemplates:
                   type: array
                   items:
                     type: object
@@ -69,11 +69,11 @@ spec:
                   type: string
                 startedAt:
                   type: string
-                isSuccessfull:
+                isSuccessful:
                   type: boolean
                 outcome:
                   type: string
   names:
-    kind: Job
-    plural: jobs
+    kind: QueueJob
+    plural: queuejobs
   scope: Namespaced

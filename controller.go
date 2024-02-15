@@ -4,7 +4,7 @@ import (
 	"flag"
 	"github.com/rs/zerolog"
 	v1alpha12 "k8qu/pkg/apis/k8qu/v1alpha1"
-	"k8qu/pkg/apis/k8qu/v1alpha1/job"
+	"k8qu/pkg/apis/k8qu/v1alpha1/queuejob"
 	"k8qu/pkg/apis/k8qu/v1alpha1/queuesettings"
 	"k8qu/pkg/clientset"
 	"k8qu/pkg/clientset/v1alpha1"
@@ -48,7 +48,7 @@ func main() {
 
 	_ = v1alpha12.AddToScheme(scheme.Scheme)
 
-	jobClientSet, err := v1alpha1.NewForJob(restConfig)
+	jobClientSet, err := v1alpha1.NewForQueueJob(restConfig)
 	if err != nil {
 		panic(err)
 	}
@@ -143,16 +143,16 @@ func main() {
 			qs := qsFromStore[i].(*queuesettings.QueueSettings)
 			queues.AddQueue(qs.GetQueueName(), queue.Settings{
 				Parallelism:                  qs.Spec.Parallelism,
-				TtlAfterSuccesfullCompletion: qs.Spec.TtlAfterSuccesfullCompletion,
+				TtlAfterSuccessfulCompletion: qs.Spec.TtlAfterSuccessfulCompletion,
 				TtlAfterFailedCompletion:     qs.Spec.TtlAfterFailedCompletion,
-				Timeout:                      qs.Spec.Timeout,
-				DeadlineTimeout:              qs.Spec.DeadlineTimeout,
+				ExecutionTimeout:             qs.Spec.ExecutionTimeout,
+				MaxTimeInQueue:               qs.Spec.MaxTimeInQueue,
 			})
 		}
 
 		jobsFromStore := (*jobStore).List()
 		for i := range jobsFromStore {
-			castedJob := jobsFromStore[i].(*job.Job) // safe cast
+			castedJob := jobsFromStore[i].(*queuejob.QueueJob) // safe cast
 			if reconcileQueue == "" {
 				queues.AddJob(castedJob)
 			} else if reconcileQueue == castedJob.GetQueueName() {
@@ -160,7 +160,7 @@ func main() {
 			}
 		}
 
-		queues.Reconcile(&clientset.JobUpdater{
+		queues.Reconcile(&clientset.QueueJobUpdater{
 			Client:          jobClientSet,
 			ServerResources: discoveryClient,
 			Dynamic:         dynamicClient,

@@ -1,4 +1,4 @@
-package job
+package queuejob
 
 import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -43,9 +43,9 @@ func TestIsCompletedAndCanBeDeleted(t *testing.T) {
 
 	boolV := true
 
-	job.Spec.TtlAfterSuccesfullCompletion = "5s"
+	job.Spec.TtlAfterSuccessfulCompletion = "5s"
 	job.Status.CompletedAt = &past
-	job.Status.IsSuccesfull = &boolV
+	job.Status.IsSuccessful = &boolV
 
 	_, isCompletedAndCanBeDeleted := job.IsCompletedAndCanBeDeleted("", "")
 	if !isCompletedAndCanBeDeleted {
@@ -60,9 +60,9 @@ func TestIsCompletedAndCanBeDeletedFalse(t *testing.T) {
 
 	boolV := true
 
-	job.Spec.TtlAfterSuccesfullCompletion = "15s"
+	job.Spec.TtlAfterSuccessfulCompletion = "15s"
 	job.Status.CompletedAt = &past
-	job.Status.IsSuccesfull = &boolV
+	job.Status.IsSuccessful = &boolV
 
 	_, isCompletedAndCanBeDeleted := job.IsCompletedAndCanBeDeleted("", "")
 	if isCompletedAndCanBeDeleted {
@@ -78,9 +78,9 @@ func TestIsCompletedAndCanBeDeletedFailed(t *testing.T) {
 	falseV := false
 
 	job.Spec.TtlAfterFailedCompletion = "5s"
-	job.Spec.TtlAfterSuccesfullCompletion = "20s"
+	job.Spec.TtlAfterSuccessfulCompletion = "20s"
 	job.Status.CompletedAt = &past
-	job.Status.IsSuccesfull = &falseV
+	job.Status.IsSuccessful = &falseV
 
 	_, isCompletedAndCanBeDeleted := job.IsCompletedAndCanBeDeleted("", "")
 	if !isCompletedAndCanBeDeleted {
@@ -96,9 +96,9 @@ func TestIsCompletedAndCanBeDeletedFalseFailed(t *testing.T) {
 	falseV := false
 
 	job.Spec.TtlAfterFailedCompletion = "15s"
-	job.Spec.TtlAfterSuccesfullCompletion = "5s"
+	job.Spec.TtlAfterSuccessfulCompletion = "5s"
 	job.Status.CompletedAt = &past
-	job.Status.IsSuccesfull = &falseV
+	job.Status.IsSuccessful = &falseV
 
 	_, isCompletedAndCanBeDeleted := job.IsCompletedAndCanBeDeleted("", "")
 	if isCompletedAndCanBeDeleted {
@@ -111,10 +111,10 @@ func TestIsTimedOut(t *testing.T) {
 	duration, _ := time.ParseDuration("10s")
 	past := time.Now().Add(-duration)
 
-	job.Spec.Timeout = "5s"
+	job.Spec.ExecutionTimeout = "5s"
 	job.Status.StartedAt = &past
 
-	_, isTimedOut := job.IsTimedOut("")
+	_, isTimedOut := job.IsExecutionTimedOut("")
 	if !isTimedOut {
 		t.Fail()
 	}
@@ -125,38 +125,38 @@ func TestIsTimedOutFalse(t *testing.T) {
 	duration, _ := time.ParseDuration("4s")
 	past := time.Now().Add(-duration)
 
-	job.Spec.Timeout = "5s"
+	job.Spec.ExecutionTimeout = "5s"
 	job.Status.StartedAt = &past
 
-	_, isTimedOut := job.IsTimedOut("")
+	_, isTimedOut := job.IsExecutionTimedOut("")
 	if isTimedOut {
 		t.Fail()
 	}
 }
 
-func TestIsDeadlineTimeout(t *testing.T) {
+func TestIsTooLongInQueue(t *testing.T) {
 	job := CreateMockJob()
 	duration, _ := time.ParseDuration("10s")
 	past := time.Now().Add(-duration)
 
-	job.Spec.DeadlineTimeout = "5s"
+	job.Spec.MaxTimeInQueue = "5s"
 	job.ObjectMeta.CreationTimestamp = metav1.NewTime(past)
 
-	_, isTimedOut := job.IsDeadlinedTimeout("")
+	_, isTimedOut := job.IsTooLongInQueue("")
 	if !isTimedOut {
 		t.Fail()
 	}
 }
 
-func TestIsDeadlineTimeoutFalse(t *testing.T) {
+func TestIsTooLongInQueueFalse(t *testing.T) {
 	job := CreateMockJob()
 	duration, _ := time.ParseDuration("4s")
 	past := time.Now().Add(-duration)
 
-	job.Spec.DeadlineTimeout = "5s"
+	job.Spec.MaxTimeInQueue = "5s"
 	job.ObjectMeta.CreationTimestamp = metav1.NewTime(past)
 
-	_, isTimedOut := job.IsDeadlinedTimeout("")
+	_, isTimedOut := job.IsTooLongInQueue("")
 	if isTimedOut {
 		t.Fail()
 	}

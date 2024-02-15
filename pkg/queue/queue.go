@@ -3,7 +3,7 @@ package queue
 import (
 	"fmt"
 	"github.com/rs/zerolog"
-	"k8qu/pkg/apis/k8qu/v1alpha1/job"
+	"k8qu/pkg/apis/k8qu/v1alpha1/queuejob"
 	logger "k8qu/pkg/log"
 )
 
@@ -11,31 +11,31 @@ var log = logger.Logger()
 
 type Queue struct {
 	Name     string
-	Jobs     []*job.Job
+	Jobs     []*queuejob.QueueJob
 	Settings Settings
 }
 
 type Settings struct {
 	Parallelism                  int64
-	TtlAfterSuccesfullCompletion string
+	TtlAfterSuccessfulCompletion string
 	TtlAfterFailedCompletion     string
-	Timeout                      string
-	DeadlineTimeout              string
+	ExecutionTimeout             string
+	MaxTimeInQueue               string
 }
 
 func NewQueue(name string, settings Settings) *Queue {
 	return &Queue{
 		Name:     name,
-		Jobs:     []*job.Job{},
+		Jobs:     []*queuejob.QueueJob{},
 		Settings: settings,
 	}
 }
 
 type JobUpdater interface {
-	DeleteJob(jb *job.Job) error
-	UpdateJobForTimeout(jb *job.Job) error
-	UpdateJobForDeadlineTimeout(jb *job.Job) error
-	StartJob(jb *job.Job) bool
+	DeleteJob(jb *queuejob.QueueJob) error
+	UpdateJobForExecutionTimeout(jb *queuejob.QueueJob) error
+	UpdateJobForMaxTimeInQueue(jb *queuejob.QueueJob) error
+	StartJob(jb *queuejob.QueueJob) bool
 }
 
 func (q *Queue) IsEmpty() bool {
@@ -50,6 +50,6 @@ func (q *Queue) DebugErr(err error) {
 	log.WithLevel(zerolog.DebugLevel).Err(err)
 }
 
-func (q *Queue) Add(addJob *job.Job) {
+func (q *Queue) Add(addJob *queuejob.QueueJob) {
 	q.Jobs = append(q.Jobs, addJob)
 }

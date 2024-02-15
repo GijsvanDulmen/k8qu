@@ -1,13 +1,11 @@
 package queue
 
-import (
-	"k8qu/pkg/apis/k8qu/v1alpha1/job"
-)
+import "k8qu/pkg/apis/k8qu/v1alpha1/queuejob"
 
-func ProcessForCompletedJobs(jobs []*job.Job, jobUpdater JobUpdater, settings Settings) ([]*job.Job, error) {
-	return ReduceJobs(jobs, func(jb job.Job) (bool, error) {
+func ProcessForCompletedJobs(jobs []*queuejob.QueueJob, jobUpdater JobUpdater, settings Settings) ([]*queuejob.QueueJob, error) {
+	return ReduceJobs(jobs, func(jb queuejob.QueueJob) (bool, error) {
 		if jb.IsCompleted() {
-			err, isCompletedAndCanBeDeleted := jb.IsCompletedAndCanBeDeleted(settings.TtlAfterSuccesfullCompletion, settings.TtlAfterFailedCompletion)
+			err, isCompletedAndCanBeDeleted := jb.IsCompletedAndCanBeDeleted(settings.TtlAfterSuccessfulCompletion, settings.TtlAfterFailedCompletion)
 			if err != nil {
 				return false, err
 			} else if isCompletedAndCanBeDeleted {
@@ -22,21 +20,20 @@ func ProcessForCompletedJobs(jobs []*job.Job, jobUpdater JobUpdater, settings Se
 	})
 }
 
-func ProcessForDeadlineTimeout(jobs []*job.Job, jobUpdater JobUpdater, deadlineTimeout string) ([]*job.Job, error) {
-	return ReduceJobs(jobs, func(jb job.Job) (bool, error) {
+func ProcessForTooLongInQueue(jobs []*queuejob.QueueJob, jobUpdater JobUpdater, maxTimeInQueue string) ([]*queuejob.QueueJob, error) {
+	return ReduceJobs(jobs, func(jb queuejob.QueueJob) (bool, error) {
 		if jb.IsCompleted() {
 			return true, nil
 		}
 
-		// check if deadlined
-		err, isDeadlinedTimeout := jb.IsDeadlinedTimeout(deadlineTimeout)
+		err, IsTooLongInQueue := jb.IsTooLongInQueue(maxTimeInQueue)
 		if err != nil {
 			return false, err
 		}
 
-		if isDeadlinedTimeout {
-			jb.MarkDeadlinedTimeout()
-			err = jobUpdater.UpdateJobForDeadlineTimeout(&jb)
+		if IsTooLongInQueue {
+			jb.MarkTooLongInQueue()
+			err = jobUpdater.UpdateJobForMaxTimeInQueue(&jb)
 			if err != nil {
 				return false, err
 			}
@@ -47,19 +44,19 @@ func ProcessForDeadlineTimeout(jobs []*job.Job, jobUpdater JobUpdater, deadlineT
 	})
 }
 
-func ProcessForTimeouts(jobs []*job.Job, jobUpdater JobUpdater, timeout string) ([]*job.Job, int64, error) {
+func ProcessForExecutionTimeouts(jobs []*queuejob.QueueJob, jobUpdater JobUpdater, timeout string) ([]*queuejob.QueueJob, int64, error) {
 	runningJobs := int64(0)
-	reduceJobs, err := ReduceJobs(jobs, func(jb job.Job) (bool, error) {
+	reduceJobs, err := ReduceJobs(jobs, func(jb queuejob.QueueJob) (bool, error) {
 		if jb.IsRunning() {
-			err, isTimedOut := jb.IsTimedOut(timeout)
+			err, isExecutionTimedOut := jb.IsExecutionTimedOut(timeout)
 			if err != nil {
 				return false, err
 			}
 
-			if isTimedOut {
+			if isExecutionTimedOut {
 				jb.MarkTimedOut()
 
-				err = jobUpdater.UpdateJobForTimeout(&jb)
+				err = jobUpdater.UpdateJobForExecutionTimeout(&jb)
 				if err != nil {
 					return false, err
 				}

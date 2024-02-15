@@ -2,7 +2,7 @@ package v1alpha1
 
 import (
 	k8qucontroller "k8qu/pkg/apis/k8qu"
-	"k8qu/pkg/apis/k8qu/v1alpha1/job"
+	"k8qu/pkg/apis/k8qu/v1alpha1/queuejob"
 	"k8qu/pkg/apis/k8qu/v1alpha1/queuesettings"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
@@ -26,8 +26,8 @@ var (
 
 func addKnownTypes(scheme *runtime.Scheme) error {
 	scheme.AddKnownTypes(SchemeGroupVersion,
-		&job.Job{},
-		&job.JobList{},
+		&queuejob.QueueJob{},
+		&queuejob.QueueJobList{},
 		&queuesettings.QueueSettings{},
 		&queuesettings.QueueSettingsList{},
 	)

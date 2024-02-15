@@ -1,9 +1,9 @@
 apiVersion: k8qu.io/v1alpha1
-kind: Job
+kind: QueueJob
 metadata:
   name: fill-the-queue
 spec:
-  queue: "deadline"
+  queue: "max-time-in-queue"
 
   templates:
     - apiVersion: v1
