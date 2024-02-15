@@ -19,6 +19,38 @@ type QueueJobUpdater struct {
 	Dynamic         dynamic.Interface
 }
 
+func (j *QueueJobUpdater) UpdateJobForCompletion(jb *queuejob.QueueJob) error {
+	err := j.UpdateJob(jb)
+	if err != nil {
+		log.WithLevel(zerolog.ErrorLevel).Msgf("%s - job could not be marked for completion %s", jb.GetQueueName(), jb.Name)
+		log.WithLevel(zerolog.ErrorLevel).Err(err)
+	} else {
+		err = CreateTemplates(jb.Spec.OnCompletionTemplates, jb, j.ServerResources, j.Dynamic)
+		if err != nil {
+			log.WithLevel(zerolog.ErrorLevel).Msgf("%s - job marked as completed but could not create resources %s", jb.GetQueueName(), jb.Name)
+			log.WithLevel(zerolog.ErrorLevel).Msg(err.Error())
+			log.WithLevel(zerolog.ErrorLevel).Err(err)
+		}
+	}
+	return err
+}
+
+func (j *QueueJobUpdater) UpdateJobForFailure(jb *queuejob.QueueJob) error {
+	err := j.UpdateJob(jb)
+	if err != nil {
+		log.WithLevel(zerolog.ErrorLevel).Msgf("%s - job could not be marked for failure %s", jb.GetQueueName(), jb.Name)
+		log.WithLevel(zerolog.ErrorLevel).Err(err)
+	} else {
+		err = CreateTemplates(jb.Spec.OnFailureTemplates, jb, j.ServerResources, j.Dynamic)
+		if err != nil {
+			log.WithLevel(zerolog.ErrorLevel).Msgf("%s - job marked as failure but could not create resources %s", jb.GetQueueName(), jb.Name)
+			log.WithLevel(zerolog.ErrorLevel).Msg(err.Error())
+			log.WithLevel(zerolog.ErrorLevel).Err(err)
+		}
+	}
+	return err
+}
+
 func (j *QueueJobUpdater) StartJob(nextJob *queuejob.QueueJob) bool {
 	nextJob.MarkRunning()
 	err := j.UpdateJob(nextJob)

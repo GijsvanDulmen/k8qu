@@ -3,7 +3,7 @@ source settings.sh
 
 cd ..
 
-#kubectl --kubeconfig ${CONFIG} delete jobs.k8qu.io --all
+#kubectl --kubeconfig ${CONFIG} delete queuejobs.k8qu.io --all
 
 #kubectl --kubeconfig ${CONFIG} apply -f ./examples/auto-complete-me/
 #
@@ -23,7 +23,9 @@ cd ..
 
 #kubectl --kubeconfig ${CONFIG} apply -f ./examples/timeout-on-queue-settings.yaml
 
-kubectl --kubeconfig ${CONFIG} apply -f ./examples/templates-on-timeout.yaml
+#kubectl --kubeconfig ${CONFIG} apply -f ./examples/templates-on-timeout.yaml
+#kubectl --kubeconfig ${CONFIG} apply -f ./examples/templates-on-success.yaml
+kubectl --kubeconfig ${CONFIG} apply -f ./examples/templates-on-failure.yaml
 
 # test getting from queue settings
 #helm template ./examples/queue-chart/ \

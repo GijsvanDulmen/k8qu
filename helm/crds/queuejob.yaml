@@ -62,6 +62,18 @@ spec:
                     type: object
                     x-kubernetes-embedded-resource: true
                     x-kubernetes-preserve-unknown-fields: true
+                onCompletionTemplates:
+                  type: array
+                  items:
+                    type: object
+                    x-kubernetes-embedded-resource: true
+                    x-kubernetes-preserve-unknown-fields: true
+                onFailureTemplates:
+                  type: array
+                  items:
+                    type: object
+                    x-kubernetes-embedded-resource: true
+                    x-kubernetes-preserve-unknown-fields: true
             status:
               type: object
               properties:

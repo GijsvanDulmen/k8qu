@@ -28,6 +28,8 @@ type Spec struct {
 	Templates                   []*runtime.RawExtension `json:"templates,omitempty"`
 	OnTooLongInQueueTemplates   []*runtime.RawExtension `json:"onTooLongInQueueTemplates,omitempty"`
 	OnExecutionTimeoutTemplates []*runtime.RawExtension `json:"onExecutionTimeoutTemplates,omitempty"`
+	OnCompletionTemplates       []*runtime.RawExtension `json:"onCompletionTemplates,omitempty"`
+	OnFailureTemplates          []*runtime.RawExtension `json:"onFailureTemplates,omitempty"`
 }
 
 type Status struct {

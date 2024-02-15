@@ -22,7 +22,7 @@ spec:
               command:
               - "kubectl"
               - "patch"
-              - "jobs.k8qu.io"
+              - "queuejobs.k8qu.io"
               - "auto-complete-me"
               - "--type"
               - "merge"

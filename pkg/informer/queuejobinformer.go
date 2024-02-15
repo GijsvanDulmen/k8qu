@@ -5,14 +5,14 @@ import (
 	"k8s.io/client-go/kubernetes"
 )
 
-type JobInformer struct {
+type QueueJobInformer struct {
 	clientSet           v1alpha1.QueueJobClientInterface
 	coreClientSet       *kubernetes.Clientset
 	jobReconcileRequest JobReconcileRequest
 }
 
-func NewJobInformer(clientSet v1alpha1.QueueJobClientInterface, coreClientSet *kubernetes.Clientset, jobReconcileRequest JobReconcileRequest) (informer *JobInformer) {
-	return &JobInformer{
+func NewQueueJobInformer(clientSet v1alpha1.QueueJobClientInterface, coreClientSet *kubernetes.Clientset, jobReconcileRequest JobReconcileRequest) (informer *QueueJobInformer) {
+	return &QueueJobInformer{
 		clientSet:           clientSet,
 		coreClientSet:       coreClientSet,
 		jobReconcileRequest: jobReconcileRequest,

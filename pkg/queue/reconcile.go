@@ -8,6 +8,27 @@ import (
 )
 
 func (q *Queue) Reconcile(jobUpdater JobUpdater) {
+	for _, cs := range q.Jobs {
+		completed := cs.Spec.Completed
+		if (completed != nil) && *completed && cs.Status.CompletedAt == nil {
+			cs.MarkCompleted()
+			err := jobUpdater.UpdateJobForCompletion(cs)
+			if err != nil {
+				return
+			}
+		}
+
+		// update failed data
+		failed := cs.Spec.Failed
+		if (failed != nil) && *failed && cs.Status.CompletedAt == nil {
+			cs.MarkFailed()
+			err := jobUpdater.UpdateJobForFailure(cs)
+			if err != nil {
+				return
+			}
+		}
+	}
+
 	log.WithLevel(zerolog.DebugLevel).Msgf("%s - total jobs %d", q.Name, len(q.Jobs))
 	log.WithLevel(zerolog.DebugLevel).Msgf("%s - parallelism %d", q.Name, q.Settings.Parallelism)
 

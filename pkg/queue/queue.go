@@ -36,6 +36,8 @@ type JobUpdater interface {
 	UpdateJobForExecutionTimeout(jb *queuejob.QueueJob) error
 	UpdateJobForMaxTimeInQueue(jb *queuejob.QueueJob) error
 	StartJob(jb *queuejob.QueueJob) bool
+	UpdateJobForCompletion(jb *queuejob.QueueJob) error
+	UpdateJobForFailure(jb *queuejob.QueueJob) error
 }
 
 func (q *Queue) IsEmpty() bool {

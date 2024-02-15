@@ -12,7 +12,7 @@ import (
 	"time"
 )
 
-func (informer *JobInformer) WatchJob() (cache.Store, cache.Controller) {
+func (informer *QueueJobInformer) WatchJob() (cache.Store, cache.Controller) {
 	store, controller := cache.NewInformer(
 		&cache.ListWatch{
 			ListFunc: func(lo metav1.ListOptions) (result runtime.Object, err error) {
@@ -50,7 +50,7 @@ func (informer *JobInformer) WatchJob() (cache.Store, cache.Controller) {
 	return store, controller
 }
 
-func (informer *JobInformer) ReconcileJob(cs *queuejob.QueueJob) {
+func (informer *QueueJobInformer) ReconcileJob(cs *queuejob.QueueJob) {
 	if cs.ObjectMeta.DeletionTimestamp.IsZero() {
 		if !controllerutil.ContainsFinalizer(cs, finalizerName) {
 			LogForJob(*cs, "adding finalizer", zerolog.DebugLevel)
@@ -62,27 +62,6 @@ func (informer *JobInformer) ReconcileJob(cs *queuejob.QueueJob) {
 			}
 			return
 		}
-
-		// update completion data
-		completed := cs.Spec.Completed
-		if (completed != nil) && *completed && cs.Status.CompletedAt == nil {
-			cs.MarkCompleted()
-			_, err := informer.clientSet.QueueJob(cs.ObjectMeta.Namespace).Update(cs, metav1.UpdateOptions{})
-			if err != nil {
-				LogForJob(*cs, err.Error(), zerolog.ErrorLevel)
-			}
-		}
-
-		// update failed data
-		failed := cs.Spec.Failed
-		if (failed != nil) && *failed && cs.Status.CompletedAt == nil {
-			cs.MarkFailed()
-			_, err := informer.clientSet.QueueJob(cs.ObjectMeta.Namespace).Update(cs, metav1.UpdateOptions{})
-			if err != nil {
-				LogForJob(*cs, err.Error(), zerolog.ErrorLevel)
-			}
-		}
-
 		informer.jobReconcileRequest(cs.GetQueueName())
 	} else {
 		if controllerutil.ContainsFinalizer(cs, finalizerName) {

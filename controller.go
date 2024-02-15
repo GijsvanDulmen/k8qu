@@ -96,7 +96,7 @@ func main() {
 	}
 
 	// job informer
-	jobInformer := informer.NewJobInformer(jobClientSet, coreClientSet, func(queue string) {
+	jobInformer := informer.NewQueueJobInformer(jobClientSet, coreClientSet, func(queue string) {
 		reconcileRequest(queue)
 	})
 	js, jc := jobInformer.WatchJob()
