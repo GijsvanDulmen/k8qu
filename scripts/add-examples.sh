@@ -24,8 +24,10 @@ cd ..
 #kubectl --kubeconfig ${CONFIG} apply -f ./examples/timeout-on-queue-settings.yaml
 
 #kubectl --kubeconfig ${CONFIG} apply -f ./examples/templates-on-timeout.yaml
-#kubectl --kubeconfig ${CONFIG} apply -f ./examples/templates-on-success.yaml
-kubectl --kubeconfig ${CONFIG} apply -f ./examples/templates-on-failure.yaml
+kubectl --kubeconfig ${CONFIG} apply -f ./examples/templates-on-success.yaml
+#kubectl --kubeconfig ${CONFIG} apply -f ./examples/templates-on-failure.yaml
+
+kubectl --kubeconfig ${CONFIG} apply -f ./examples/multi-completions.yaml
 
 # test getting from queue settings
 #helm template ./examples/queue-chart/ \

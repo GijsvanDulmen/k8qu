@@ -8,21 +8,46 @@ import (
 )
 
 func (q *Queue) Reconcile(jobUpdater JobUpdater) {
-	for _, cs := range q.Jobs {
-		completed := cs.Spec.Completed
-		if (completed != nil) && *completed && cs.Status.CompletedAt == nil {
-			cs.MarkCompleted()
-			err := jobUpdater.UpdateJobForCompletion(cs)
-			if err != nil {
-				return
+	for _, jb := range q.Jobs {
+		if jb.IsCompleted() {
+			continue
+		}
+		// part based completion
+		if len(jb.Spec.NeedsCompletedParts) > 0 {
+			missesOnePart := false
+			for _, completedPart := range jb.Spec.NeedsCompletedParts {
+				if value, ok := jb.Spec.CompletedParts[completedPart]; ok {
+					if !value {
+						missesOnePart = true
+					}
+				} else {
+					missesOnePart = true
+				}
+			}
+
+			if !missesOnePart {
+				jb.MarkCompleted()
+				err := jobUpdater.UpdateJobForCompletion(jb)
+				if err != nil {
+					return
+				}
+			}
+		} else {
+			completed := jb.Spec.Completed
+			if (completed != nil) && *completed && jb.Status.CompletedAt == nil {
+				jb.MarkCompleted()
+				err := jobUpdater.UpdateJobForCompletion(jb)
+				if err != nil {
+					return
+				}
 			}
 		}
 
 		// update failed data
-		failed := cs.Spec.Failed
-		if (failed != nil) && *failed && cs.Status.CompletedAt == nil {
-			cs.MarkFailed()
-			err := jobUpdater.UpdateJobForFailure(cs)
+		failed := jb.Spec.Failed
+		if (failed != nil) && *failed && jb.Status.CompletedAt == nil {
+			jb.MarkFailed()
+			err := jobUpdater.UpdateJobForFailure(jb)
 			if err != nil {
 				return
 			}

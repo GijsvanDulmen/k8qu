@@ -22,6 +22,9 @@ type Spec struct {
 	Completed *bool `json:"completed,omitempty"`
 	Failed    *bool `json:"failed,omitempty"`
 
+	NeedsCompletedParts []string        `json:"needsCompletedParts"`
+	CompletedParts      map[string]bool `json:"completedParts"`
+
 	TtlAfterSuccessfulCompletion string `json:"ttlAfterSuccessfulCompletion,omitempty"`
 	TtlAfterFailedCompletion     string `json:"ttlAfterFailedCompletion,omitempty"`
 

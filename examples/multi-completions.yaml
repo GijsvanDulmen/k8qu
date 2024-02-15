@@ -1,0 +1,66 @@
+apiVersion: k8qu.io/v1alpha1
+kind: QueueJob
+metadata:
+  name: multi-completions
+spec:
+  queue: "multi-completions"
+
+#  completedParts:
+#    a: true
+#    b: true
+
+  needsCompletedParts:
+    - a
+    - b
+
+  templates:
+    - apiVersion: batch/v1
+      kind: Job
+      metadata:
+        generateName: tos-
+      spec:
+        ttlSecondsAfterFinished: 10
+        template:
+          spec:
+            serviceAccountName: auto-complete-me
+            containers:
+              - name: kubectl
+                image: bitnami/kubectl
+                command:
+                  - "kubectl"
+                  - "patch"
+                  - "queuejobs.k8qu.io"
+                  - "[[JOBNAME]]"
+                  - "--type"
+                  - "merge"
+                  - "--patch"
+                  - '{"spec":{"completedParts":{"a": true}}}'
+            restartPolicy: Never
+    - apiVersion: batch/v1
+      kind: Job
+      metadata:
+        generateName: tos-
+      spec:
+        ttlSecondsAfterFinished: 10
+        template:
+          spec:
+            serviceAccountName: auto-complete-me
+            initContainers:
+              - name: sleep-a-bit
+                image: bitnami/kubectl
+                command:
+                  - "sleep"
+                  - "20"
+            containers:
+              - name: kubectl
+                image: bitnami/kubectl
+                command:
+                  - "kubectl"
+                  - "patch"
+                  - "queuejobs.k8qu.io"
+                  - "[[JOBNAME]]"
+                  - "--type"
+                  - "merge"
+                  - "--patch"
+                  - '{"spec":{"completedParts":{"b": true}}}'
+            restartPolicy: Never
