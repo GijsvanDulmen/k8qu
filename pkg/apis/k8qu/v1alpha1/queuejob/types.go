@@ -15,11 +15,13 @@ type QueueJob struct {
 }
 
 type Spec struct {
-	Queue                        string `json:"queue"`
-	ExecutionTimeout             string `json:"executionTimeout"`
-	MaxTimeInQueue               string `json:"maxTimeInQueue"`
-	Completed                    *bool  `json:"completed,omitempty"`
-	Failed                       *bool  `json:"failed,omitempty"`
+	Queue            string `json:"queue"`
+	ExecutionTimeout string `json:"executionTimeout"`
+	MaxTimeInQueue   string `json:"maxTimeInQueue"`
+
+	Completed *bool `json:"completed,omitempty"`
+	Failed    *bool `json:"failed,omitempty"`
+
 	TtlAfterSuccessfulCompletion string `json:"ttlAfterSuccessfulCompletion,omitempty"`
 	TtlAfterFailedCompletion     string `json:"ttlAfterFailedCompletion,omitempty"`
 

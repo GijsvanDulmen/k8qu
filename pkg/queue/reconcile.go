@@ -4,6 +4,7 @@ import (
 	"github.com/rs/zerolog"
 	"k8qu/pkg/apis/k8qu/v1alpha1/queuejob"
 	"sort"
+	"strings"
 )
 
 func (q *Queue) Reconcile(jobUpdater JobUpdater) {
@@ -49,9 +50,7 @@ func (q *Queue) Reconcile(jobUpdater JobUpdater) {
 func GetToStartJob(notRunningJobs []*queuejob.QueueJob, parallelism int64, numberOfRunning int64) []*queuejob.QueueJob {
 	// sort by creation timestamp
 	// equal = original order
-	sort.SliceStable(notRunningJobs, func(i, j int) bool {
-		return notRunningJobs[j].ObjectMeta.CreationTimestamp.Time.After(notRunningJobs[i].ObjectMeta.CreationTimestamp.Time)
-	})
+	SortQueueJobs(notRunningJobs)
 
 	numberToStart := parallelism - numberOfRunning
 
@@ -68,4 +67,13 @@ func GetToStartJob(notRunningJobs []*queuejob.QueueJob, parallelism int64, numbe
 		}
 	}
 	return startJobs
+}
+
+func SortQueueJobs(notRunningJobs []*queuejob.QueueJob) {
+	sort.SliceStable(notRunningJobs, func(i, j int) bool {
+		if notRunningJobs[j].ObjectMeta.CreationTimestamp.Time.Unix() == notRunningJobs[i].ObjectMeta.CreationTimestamp.Time.Unix() {
+			return strings.Compare(notRunningJobs[j].ObjectMeta.Name, notRunningJobs[i].ObjectMeta.Name) > 0
+		}
+		return notRunningJobs[j].ObjectMeta.CreationTimestamp.Time.After(notRunningJobs[i].ObjectMeta.CreationTimestamp.Time)
+	})
 }
