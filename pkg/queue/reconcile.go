@@ -1,7 +1,6 @@
 package queue
 
 import (
-	"github.com/rs/zerolog"
 	"k8qu/pkg/apis/k8qu/v1alpha1/queuejob"
 	"sort"
 	"strings"
@@ -54,8 +53,8 @@ func (q *Queue) Reconcile(jobUpdater JobUpdater) {
 		}
 	}
 
-	log.WithLevel(zerolog.DebugLevel).Msgf("%s - total jobs %d", q.Name, len(q.Jobs))
-	log.WithLevel(zerolog.DebugLevel).Msgf("%s - parallelism %d", q.Name, q.Settings.Parallelism)
+	log.Debug().Msgf("%s - total jobs %d", q.Name, len(q.Jobs))
+	log.Debug().Msgf("%s - parallelism %d", q.Name, q.Settings.Parallelism)
 
 	toBeDoneJobs, err := ProcessForTooLongInQueue(q.Jobs, jobUpdater, q.Settings.MaxTimeInQueue)
 	if err != nil {
@@ -71,7 +70,7 @@ func (q *Queue) Reconcile(jobUpdater JobUpdater) {
 		return
 	}
 
-	log.WithLevel(zerolog.DebugLevel).Msgf("%s - jobs still running or need to run %d", q.Name, len(toBeDoneJobs))
+	log.Debug().Msgf("%s - jobs still running or need to run %d", q.Name, len(toBeDoneJobs))
 
 	// get not running jobs
 	notRunningJobs, numberOfRunning, err := ProcessForExecutionTimeouts(toBeDoneJobs, jobUpdater, q.Settings.ExecutionTimeout)

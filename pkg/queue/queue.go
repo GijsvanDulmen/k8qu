@@ -2,7 +2,6 @@ package queue
 
 import (
 	"fmt"
-	"github.com/rs/zerolog"
 	"k8qu/pkg/apis/k8qu/v1alpha1/queuejob"
 	logger "k8qu/pkg/log"
 )
@@ -45,11 +44,11 @@ func (q *Queue) IsEmpty() bool {
 }
 
 func (q *Queue) DebugLog(msg ...any) {
-	log.WithLevel(zerolog.DebugLevel).Msgf("%s - %s", q.Name, fmt.Sprintf("%s", msg))
+	log.Debug().Msgf("%s - %s", q.Name, fmt.Sprintf("%s", msg))
 }
 
 func (q *Queue) DebugErr(err error) {
-	log.WithLevel(zerolog.DebugLevel).Err(err)
+	log.Debug().Err(err)
 }
 
 func (q *Queue) Add(addJob *queuejob.QueueJob) {

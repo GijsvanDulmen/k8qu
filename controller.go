@@ -2,7 +2,6 @@ package main
 
 import (
 	"flag"
-	"github.com/rs/zerolog"
 	v1alpha12 "k8qu/pkg/apis/k8qu/v1alpha1"
 	"k8qu/pkg/apis/k8qu/v1alpha1/queuejob"
 	"k8qu/pkg/apis/k8qu/v1alpha1/queuesettings"
@@ -122,19 +121,19 @@ func main() {
 		reconcileQueue := <-reconcileChannel
 
 		if !(*qsController).HasSynced() {
-			log.WithLevel(zerolog.DebugLevel).Msg("waiting for full sync of queue settings")
+			log.Debug().Msg("waiting for full sync of queue settings")
 			continue
 		}
 
 		if !(*jobController).HasSynced() {
-			log.WithLevel(zerolog.DebugLevel).Msg("waiting for full sync of job settings")
+			log.Debug().Msg("waiting for full sync of job settings")
 			continue
 		}
 
 		(*qsStore).List()
 
-		log.WithLevel(zerolog.DebugLevel).Msg("checking if we are synced yet")
-		log.WithLevel(zerolog.DebugLevel).Msgf("reconciling '%s'", reconcileQueue)
+		log.Debug().Msg("checking if we are synced yet")
+		log.Debug().Msgf("reconciling '%s'", reconcileQueue)
 
 		queues := queue.NewQueues()
 

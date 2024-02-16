@@ -1,7 +1,6 @@
 package informer
 
 import (
-	"github.com/rs/zerolog"
 	"k8qu/pkg/apis/k8qu/v1alpha1/queuesettings"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
@@ -28,20 +27,20 @@ func (informer *QueueSettingsInformer) WatchQueueSettings() (cache.Store, cache.
 			AddFunc: func(obj interface{}) {
 				var cs = obj
 				typed := cs.(*queuesettings.QueueSettings)
-				LogForQueueSetttings(*typed, "added", zerolog.DebugLevel)
+				LogForQueueSetttings(*typed, "added")
 				informer.ReconcileQueueSetting(typed)
 			},
 			UpdateFunc: func(old, new interface{}) {
 				var cs = new
 				typed := cs.(*queuesettings.QueueSettings)
-				LogForQueueSetttings(*typed, "updated", zerolog.DebugLevel)
+				LogForQueueSetttings(*typed, "updated")
 
 				informer.ReconcileQueueSetting(typed)
 			},
 			DeleteFunc: func(obj interface{}) {
 				var cs = obj
 				typed := cs.(*queuesettings.QueueSettings)
-				LogForQueueSetttings(*typed, "deleted", zerolog.DebugLevel)
+				LogForQueueSetttings(*typed, "deleted")
 			},
 		},
 	)
@@ -53,12 +52,12 @@ func (informer *QueueSettingsInformer) WatchQueueSettings() (cache.Store, cache.
 func (informer *QueueSettingsInformer) ReconcileQueueSetting(cs *queuesettings.QueueSettings) {
 	if cs.ObjectMeta.DeletionTimestamp.IsZero() {
 		if !controllerutil.ContainsFinalizer(cs, finalizerName) {
-			LogForQueueSetttings(*cs, "adding finalizer", zerolog.DebugLevel)
+			LogForQueueSetttings(*cs, "adding finalizer")
 			controllerutil.AddFinalizer(cs, finalizerName)
 
 			_, err := informer.clientSet.QueueSettings(cs.ObjectMeta.Namespace).Update(cs, metav1.UpdateOptions{})
 			if err != nil {
-				LogForQueueSetttings(*cs, err.Error(), zerolog.ErrorLevel)
+				LogForQueueSetttings(*cs, err.Error())
 			}
 			return
 		}
@@ -68,17 +67,17 @@ func (informer *QueueSettingsInformer) ReconcileQueueSetting(cs *queuesettings.Q
 		if controllerutil.ContainsFinalizer(cs, finalizerName) {
 			controllerutil.RemoveFinalizer(cs, finalizerName)
 
-			LogForQueueSetttings(*cs, "removing finalizer", zerolog.DebugLevel)
+			LogForQueueSetttings(*cs, "removing finalizer")
 
 			_, err := informer.clientSet.QueueSettings(cs.ObjectMeta.Namespace).Update(cs, metav1.UpdateOptions{})
 			if err != nil {
-				LogForQueueSetttings(*cs, "could not remove finalizer", zerolog.ErrorLevel)
-				LogForQueueSetttings(*cs, err.Error(), zerolog.ErrorLevel)
+				LogForQueueSetttings(*cs, "could not remove finalizer")
+				LogForQueueSetttings(*cs, err.Error())
 			}
 		}
 	}
 }
 
-func LogForQueueSetttings(qs queuesettings.QueueSettings, s string, level zerolog.Level) {
-	log.WithLevel(level).Msgf("queue setting %s/%s log: %s", qs.Namespace, qs.Name, s)
+func LogForQueueSetttings(qs queuesettings.QueueSettings, s string) {
+	log.Debug().Msgf("queue setting %s/%s log: %s", qs.Namespace, qs.Name, s)
 }

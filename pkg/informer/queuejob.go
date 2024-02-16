@@ -1,7 +1,6 @@
 package informer
 
 import (
-	"github.com/rs/zerolog"
 	"k8qu/pkg/apis/k8qu/v1alpha1/queuejob"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
@@ -28,20 +27,20 @@ func (informer *QueueJobInformer) WatchJob() (cache.Store, cache.Controller) {
 			AddFunc: func(obj interface{}) {
 				var cs = obj
 				typed := cs.(*queuejob.QueueJob)
-				LogForJob(*typed, "added", zerolog.DebugLevel)
+				LogForJob(*typed, "added")
 				informer.ReconcileJob(typed)
 			},
 			UpdateFunc: func(old, new interface{}) {
 				var cs = new
 				typed := cs.(*queuejob.QueueJob)
-				LogForJob(*typed, "updated", zerolog.DebugLevel)
+				LogForJob(*typed, "updated")
 
 				informer.ReconcileJob(typed)
 			},
 			DeleteFunc: func(obj interface{}) {
 				var cs = obj
 				typed := cs.(*queuejob.QueueJob)
-				LogForJob(*typed, "deleted", zerolog.DebugLevel)
+				LogForJob(*typed, "deleted")
 			},
 		},
 	)
@@ -53,12 +52,12 @@ func (informer *QueueJobInformer) WatchJob() (cache.Store, cache.Controller) {
 func (informer *QueueJobInformer) ReconcileJob(cs *queuejob.QueueJob) {
 	if cs.ObjectMeta.DeletionTimestamp.IsZero() {
 		if !controllerutil.ContainsFinalizer(cs, finalizerName) {
-			LogForJob(*cs, "adding finalizer", zerolog.DebugLevel)
+			LogForJob(*cs, "adding finalizer")
 			controllerutil.AddFinalizer(cs, finalizerName)
 
 			_, err := informer.clientSet.QueueJob(cs.ObjectMeta.Namespace).Update(cs, metav1.UpdateOptions{})
 			if err != nil {
-				LogForJob(*cs, err.Error(), zerolog.ErrorLevel)
+				LogForJob(*cs, err.Error())
 			}
 			return
 		}
@@ -67,17 +66,17 @@ func (informer *QueueJobInformer) ReconcileJob(cs *queuejob.QueueJob) {
 		if controllerutil.ContainsFinalizer(cs, finalizerName) {
 			controllerutil.RemoveFinalizer(cs, finalizerName)
 
-			LogForJob(*cs, "removing finalizer", zerolog.DebugLevel)
+			LogForJob(*cs, "removing finalizer")
 
 			_, err := informer.clientSet.QueueJob(cs.ObjectMeta.Namespace).Update(cs, metav1.UpdateOptions{})
 			if err != nil {
-				LogForJob(*cs, "could not remove finalizer", zerolog.ErrorLevel)
-				LogForJob(*cs, err.Error(), zerolog.ErrorLevel)
+				LogForJob(*cs, "could not remove finalizer")
+				LogForJob(*cs, err.Error())
 			}
 		}
 	}
 }
 
-func LogForJob(j queuejob.QueueJob, s string, level zerolog.Level) {
-	log.WithLevel(level).Msgf("job %s/%s log: %s", j.Namespace, j.Name, s)
+func LogForJob(j queuejob.QueueJob, s string) {
+	log.Debug().Msgf("job %s/%s log: %s", j.Namespace, j.Name, s)
 }
