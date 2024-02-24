@@ -20,7 +20,7 @@ func TestProcessForCompletionToBeDeleted(t *testing.T) {
 
 	jobs := []*queuejob.QueueJob{&jb, &jb2}
 
-	resultJobs, err := ProcessForCompletedJobs(jobs, &JobUpdaterMock{}, Settings{
+	resultJobs, err := ProcessForCompletedJobs(jobs, &JobUpdaterMock{}, DefaultSettings{
 		Parallelism:                  0,
 		TtlAfterSuccessfulCompletion: "",
 		TtlAfterFailedCompletion:     "",
@@ -45,7 +45,7 @@ func TestProcessForCompletionToBeDeletedErrored(t *testing.T) {
 
 	jobs := []*queuejob.QueueJob{&jb2}
 
-	resultJobs, err := ProcessForCompletedJobs(jobs, &JobUpdaterMock{Result: errors.New("broken")}, Settings{
+	resultJobs, err := ProcessForCompletedJobs(jobs, &JobUpdaterMock{Result: errors.New("broken")}, DefaultSettings{
 		Parallelism:                  0,
 		TtlAfterSuccessfulCompletion: "",
 		TtlAfterFailedCompletion:     "",

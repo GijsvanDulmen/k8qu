@@ -10,6 +10,14 @@ type JobUpdaterMock struct {
 	Result error
 }
 
+func (j *JobUpdaterMock) UpdateJobForCompletion(jb *queuejob.QueueJob) error {
+	return j.Result
+}
+
+func (j *JobUpdaterMock) UpdateJobForFailure(jb *queuejob.QueueJob) error {
+	return j.Result
+}
+
 func (j *JobUpdaterMock) UpdateJobForExecutionTimeout(jb *queuejob.QueueJob) error {
 	return j.Result
 }
@@ -26,12 +34,8 @@ func (j *JobUpdaterMock) DeleteJob(jb *queuejob.QueueJob) error {
 	return j.Result
 }
 
-func (j *JobUpdaterMock) UpdateJob(jb *queuejob.QueueJob) error {
-	return j.Result
-}
-
 func TestEmpty(t *testing.T) {
-	queue := NewQueue("a", Settings{})
+	queue := NewQueue("a", DefaultSettings{})
 	if !queue.IsEmpty() {
 		t.Failed()
 	}

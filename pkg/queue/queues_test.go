@@ -19,23 +19,23 @@ func TestAddQueue(t *testing.T) {
 	}
 
 	if queue, ok := queues.Queues["ns.a"]; ok {
-		if queue.Settings.Parallelism != 1 {
+		if queue.Settings.GetParallelism() != 1 {
 			t.Fail()
 		}
 
-		if queue.Settings.TtlAfterFailedCompletion != "" {
+		if queue.Settings.GetTtlAfterFailedCompletion() != "" {
 			t.Fail()
 		}
 
-		if queue.Settings.TtlAfterFailedCompletion != "" {
+		if queue.Settings.GetTtlAfterFailedCompletion() != "" {
 			t.Fail()
 		}
 
-		if queue.Settings.MaxTimeInQueue != "" {
+		if queue.Settings.GetMaxTimeInQueue() != "" {
 			t.Fail()
 		}
 
-		if queue.Settings.ExecutionTimeout != "" {
+		if queue.Settings.GetExecutionTimeout() != "" {
 			t.Fail()
 		}
 	} else {
@@ -50,7 +50,7 @@ func TestAddQueueWithQueueSpec(t *testing.T) {
 	jb.Spec.Queue = "a"
 	jb.ObjectMeta.Namespace = "ns"
 
-	queues.AddQueue("ns.a", Settings{
+	queues.AddQueue("ns.a", DefaultSettings{
 		Parallelism:                  2,
 		TtlAfterSuccessfulCompletion: "2s",
 		TtlAfterFailedCompletion:     "2s",
@@ -64,23 +64,23 @@ func TestAddQueueWithQueueSpec(t *testing.T) {
 	}
 
 	if queue, ok := queues.Queues["ns.a"]; ok {
-		if queue.Settings.Parallelism != 2 {
+		if queue.Settings.GetParallelism() != 2 {
 			t.Fail()
 		}
 
-		if queue.Settings.TtlAfterFailedCompletion != "2s" {
+		if queue.Settings.GetTtlAfterFailedCompletion() != "2s" {
 			t.Fail()
 		}
 
-		if queue.Settings.TtlAfterFailedCompletion != "2s" {
+		if queue.Settings.GetTtlAfterFailedCompletion() != "2s" {
 			t.Fail()
 		}
 
-		if queue.Settings.MaxTimeInQueue != "2s" {
+		if queue.Settings.GetMaxTimeInQueue() != "2s" {
 			t.Fail()
 		}
 
-		if queue.Settings.ExecutionTimeout != "2s" {
+		if queue.Settings.GetExecutionTimeout() != "2s" {
 			t.Fail()
 		}
 	} else {

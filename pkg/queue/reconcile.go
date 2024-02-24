@@ -54,9 +54,9 @@ func (q *Queue) Reconcile(jobUpdater JobUpdater) {
 	}
 
 	log.Debug().Msgf("%s - total jobs %d", q.Name, len(q.Jobs))
-	log.Debug().Msgf("%s - parallelism %d", q.Name, q.Settings.Parallelism)
+	log.Debug().Msgf("%s - parallelism %d", q.Name, q.Settings.GetParallelism())
 
-	toBeDoneJobs, err := ProcessForTooLongInQueue(q.Jobs, jobUpdater, q.Settings.MaxTimeInQueue)
+	toBeDoneJobs, err := ProcessForTooLongInQueue(q.Jobs, jobUpdater, q.Settings.GetMaxTimeInQueue())
 	if err != nil {
 		q.DebugLog("could not process for max time in queue")
 		q.DebugErr(err)
@@ -73,16 +73,16 @@ func (q *Queue) Reconcile(jobUpdater JobUpdater) {
 	log.Debug().Msgf("%s - jobs still running or need to run %d", q.Name, len(toBeDoneJobs))
 
 	// get not running jobs
-	notRunningJobs, numberOfRunning, err := ProcessForExecutionTimeouts(toBeDoneJobs, jobUpdater, q.Settings.ExecutionTimeout)
+	notRunningJobs, numberOfRunning, err := ProcessForExecutionTimeouts(toBeDoneJobs, jobUpdater, q.Settings.GetExecutionTimeout())
 	if err != nil {
 		q.DebugLog("could not process for execution timeouts")
 		q.DebugErr(err)
 		return
 	}
 
-	if numberOfRunning < q.Settings.Parallelism {
+	if numberOfRunning < q.Settings.GetParallelism() {
 
-		toStartJobs := GetToStartJob(notRunningJobs, q.Settings.Parallelism, numberOfRunning)
+		toStartJobs := GetToStartJob(notRunningJobs, q.Settings.GetParallelism(), numberOfRunning)
 
 		for i := range toStartJobs {
 			if jobUpdater.StartJob(notRunningJobs[i]) {

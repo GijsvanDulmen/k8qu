@@ -19,6 +19,26 @@ type Spec struct {
 	MaxTimeInQueue               string `json:"maxTimeInQueue"`
 }
 
+func (s Spec) GetParallelism() int64 {
+	return s.Parallelism
+}
+
+func (s Spec) GetTtlAfterSuccessfulCompletion() string {
+	return s.TtlAfterSuccessfulCompletion
+}
+
+func (s Spec) GetTtlAfterFailedCompletion() string {
+	return s.TtlAfterFailedCompletion
+}
+
+func (s Spec) GetExecutionTimeout() string {
+	return s.ExecutionTimeout
+}
+
+func (s Spec) GetMaxTimeInQueue() string {
+	return s.MaxTimeInQueue
+}
+
 type QueueSettingsList struct {
 	metav1.TypeMeta `json:",inline"`
 	metav1.ListMeta `json:"metadata"`

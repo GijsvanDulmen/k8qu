@@ -25,21 +25,17 @@ func (informer *QueueJobInformer) WatchJob() (cache.Store, cache.Controller) {
 		1*time.Minute,
 		cache.ResourceEventHandlerFuncs{
 			AddFunc: func(obj interface{}) {
-				var cs = obj
-				typed := cs.(*queuejob.QueueJob)
+				typed := obj.(*queuejob.QueueJob)
 				LogForJob(*typed, "added")
 				informer.ReconcileJob(typed)
 			},
 			UpdateFunc: func(old, new interface{}) {
-				var cs = new
-				typed := cs.(*queuejob.QueueJob)
+				typed := new.(*queuejob.QueueJob)
 				LogForJob(*typed, "updated")
-
 				informer.ReconcileJob(typed)
 			},
 			DeleteFunc: func(obj interface{}) {
-				var cs = obj
-				typed := cs.(*queuejob.QueueJob)
+				typed := obj.(*queuejob.QueueJob)
 				LogForJob(*typed, "deleted")
 			},
 		},

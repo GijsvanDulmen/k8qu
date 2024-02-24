@@ -25,21 +25,18 @@ func (informer *QueueSettingsInformer) WatchQueueSettings() (cache.Store, cache.
 		1*time.Minute,
 		cache.ResourceEventHandlerFuncs{
 			AddFunc: func(obj interface{}) {
-				var cs = obj
-				typed := cs.(*queuesettings.QueueSettings)
+				typed := obj.(*queuesettings.QueueSettings)
 				LogForQueueSetttings(*typed, "added")
 				informer.ReconcileQueueSetting(typed)
 			},
 			UpdateFunc: func(old, new interface{}) {
-				var cs = new
-				typed := cs.(*queuesettings.QueueSettings)
+				typed := new.(*queuesettings.QueueSettings)
 				LogForQueueSetttings(*typed, "updated")
 
 				informer.ReconcileQueueSetting(typed)
 			},
 			DeleteFunc: func(obj interface{}) {
-				var cs = obj
-				typed := cs.(*queuesettings.QueueSettings)
+				typed := obj.(*queuesettings.QueueSettings)
 				LogForQueueSetttings(*typed, "deleted")
 			},
 		},
@@ -65,9 +62,8 @@ func (informer *QueueSettingsInformer) ReconcileQueueSetting(cs *queuesettings.Q
 		informer.jobReconcileRequest(cs.Name)
 	} else {
 		if controllerutil.ContainsFinalizer(cs, finalizerName) {
-			controllerutil.RemoveFinalizer(cs, finalizerName)
-
 			LogForQueueSetttings(*cs, "removing finalizer")
+			controllerutil.RemoveFinalizer(cs, finalizerName)
 
 			_, err := informer.clientSet.QueueSettings(cs.ObjectMeta.Namespace).Update(cs, metav1.UpdateOptions{})
 			if err != nil {

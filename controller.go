@@ -42,29 +42,39 @@ func main() {
 	}
 
 	if err != nil {
-		panic(err)
+		log.Error().Err(err)
+		os.Exit(3)
+		return
 	}
 
 	_ = v1alpha12.AddToScheme(scheme.Scheme)
 
 	jobClientSet, err := v1alpha1.NewForQueueJob(restConfig)
 	if err != nil {
-		panic(err)
+		log.Error().Err(err)
+		os.Exit(3)
+		return
 	}
 
 	queueSettingsClientSet, err := v1alpha1.NewForQueueSettings(restConfig)
 	if err != nil {
-		panic(err)
+		log.Error().Err(err)
+		os.Exit(3)
+		return
 	}
 
 	discoveryClient, err := discovery.NewDiscoveryClientForConfig(restConfig)
 	if err != nil {
-		panic(err)
+		log.Error().Err(err)
+		os.Exit(3)
+		return
 	}
 
 	dynamicClient, err := dynamic.NewForConfig(restConfig)
 	if err != nil {
-		panic(err)
+		log.Error().Err(err)
+		os.Exit(3)
+		return
 	}
 
 	coreClientSet, err := kubernetes.NewForConfig(restConfig)
@@ -120,6 +130,8 @@ func main() {
 	for {
 		reconcileQueue := <-reconcileChannel
 
+		log.Debug().Msg("checking if we are synced yet")
+
 		if !(*qsController).HasSynced() {
 			log.Debug().Msg("waiting for full sync of queue settings")
 			continue
@@ -130,9 +142,6 @@ func main() {
 			continue
 		}
 
-		(*qsStore).List()
-
-		log.Debug().Msg("checking if we are synced yet")
 		log.Debug().Msgf("reconciling '%s'", reconcileQueue)
 
 		queues := queue.NewQueues()
@@ -140,7 +149,7 @@ func main() {
 		qsFromStore := (*qsStore).List()
 		for i := range qsFromStore {
 			qs := qsFromStore[i].(*queuesettings.QueueSettings)
-			queues.AddQueue(qs.GetQueueName(), queue.Settings{
+			queues.AddQueue(qs.GetQueueName(), queue.DefaultSettings{
 				Parallelism:                  qs.Spec.Parallelism,
 				TtlAfterSuccessfulCompletion: qs.Spec.TtlAfterSuccessfulCompletion,
 				TtlAfterFailedCompletion:     qs.Spec.TtlAfterFailedCompletion,
