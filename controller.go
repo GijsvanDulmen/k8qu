@@ -149,13 +149,7 @@ func main() {
 		qsFromStore := (*qsStore).List()
 		for i := range qsFromStore {
 			qs := qsFromStore[i].(*queuesettings.QueueSettings)
-			queues.AddQueue(qs.GetQueueName(), queue.DefaultSettings{
-				Parallelism:                  qs.Spec.Parallelism,
-				TtlAfterSuccessfulCompletion: qs.Spec.TtlAfterSuccessfulCompletion,
-				TtlAfterFailedCompletion:     qs.Spec.TtlAfterFailedCompletion,
-				ExecutionTimeout:             qs.Spec.ExecutionTimeout,
-				MaxTimeInQueue:               qs.Spec.MaxTimeInQueue,
-			})
+			queues.AddQueue(qs.GetQueueName(), qs.Spec)
 		}
 
 		jobsFromStore := (*jobStore).List()

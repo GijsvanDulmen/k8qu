@@ -2,7 +2,7 @@ package queue
 
 import "k8qu/pkg/apis/k8qu/v1alpha1/queuejob"
 
-func ProcessForCompletedJobs(jobs []*queuejob.QueueJob, jobUpdater JobUpdater, settings QueueSettings) ([]*queuejob.QueueJob, error) {
+func ProcessForCompletedJobs(jobs []*queuejob.QueueJob, jobUpdater JobUpdater, settings Settings) ([]*queuejob.QueueJob, error) {
 	return ReduceJobs(jobs, func(jb queuejob.QueueJob) (bool, error) {
 		if jb.IsCompleted() {
 			err, isCompletedAndCanBeDeleted := jb.IsCompletedAndCanBeDeleted(settings.GetTtlAfterSuccessfulCompletion(), settings.GetTtlAfterFailedCompletion())

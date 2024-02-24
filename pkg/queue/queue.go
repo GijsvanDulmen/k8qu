@@ -11,10 +11,10 @@ var log = logger.Logger()
 type Queue struct {
 	Name     string
 	Jobs     []*queuejob.QueueJob
-	Settings QueueSettings
+	Settings Settings
 }
 
-type QueueSettings interface {
+type Settings interface {
 	GetParallelism() int64
 	GetTtlAfterSuccessfulCompletion() string
 	GetTtlAfterFailedCompletion() string
@@ -22,7 +22,7 @@ type QueueSettings interface {
 	GetMaxTimeInQueue() string
 }
 
-func NewQueue(name string, settings QueueSettings) *Queue {
+func NewQueue(name string, settings Settings) *Queue {
 	return &Queue{
 		Name:     name,
 		Jobs:     []*queuejob.QueueJob{},

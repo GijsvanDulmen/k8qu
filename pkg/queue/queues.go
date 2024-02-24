@@ -14,7 +14,7 @@ func NewQueues() *Queues {
 	}
 }
 
-func (q *Queues) AddQueue(queue string, settings QueueSettings) {
+func (q *Queues) AddQueue(queue string, settings Settings) {
 	q.Queues[queue] = NewQueue(queue, settings)
 }
 

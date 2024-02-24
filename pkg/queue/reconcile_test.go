@@ -75,6 +75,27 @@ func TestToStartJobWithMultipleParallismWithRunning(t *testing.T) {
 	assert.Equal(t, toStartJob[0].Name, "second")
 }
 
+func TestToStartJobsWithLessThen(t *testing.T) {
+	// first job
+	firstJob := queuejob.CreateMockJob()
+	duration, _ := time.ParseDuration("5s")
+	firstJob.ObjectMeta.CreationTimestamp = metav1.NewTime(time.Now().Add(-duration))
+	firstJob.ObjectMeta.Name = "first"
+
+	// second job
+	secondJob := queuejob.CreateMockJob()
+	secondDuration, _ := time.ParseDuration("10s")
+	secondJob.ObjectMeta.CreationTimestamp = metav1.NewTime(time.Now().Add(-secondDuration))
+	secondJob.ObjectMeta.Name = "second"
+
+	// wrong order
+	jobs := []*queuejob.QueueJob{&firstJob, &secondJob}
+
+	toStartJob := GetToStartJob(jobs, 99, 1)
+
+	assert.Equal(t, len(toStartJob), 2)
+}
+
 func TestSortQueueJobs(t *testing.T) {
 	// first job
 	firstJob := queuejob.CreateMockJob()
@@ -91,7 +112,7 @@ func TestSortQueueJobs(t *testing.T) {
 	// wrong order
 	jobs := []*queuejob.QueueJob{&firstJob, &secondJob}
 
-	SortQueueJobs(jobs)
+	SortQueueJobsByCreationTime(jobs)
 
 	assert.Equal(t, len(jobs), 2)
 	assert.Equal(t, jobs[0].Name, "second")
@@ -114,7 +135,7 @@ func TestSortQueueJobsWithSame(t *testing.T) {
 	// wrong order
 	jobs := []*queuejob.QueueJob{&firstJob, &secondJob}
 
-	SortQueueJobs(jobs)
+	SortQueueJobsByCreationTime(jobs)
 
 	assert.Equal(t, len(jobs), 2)
 	assert.Equal(t, jobs[0].Name, "job-a")

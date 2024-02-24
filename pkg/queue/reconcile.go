@@ -93,15 +93,14 @@ func (q *Queue) Reconcile(jobUpdater JobUpdater) {
 }
 
 func GetToStartJob(notRunningJobs []*queuejob.QueueJob, parallelism int64, numberOfRunning int64) []*queuejob.QueueJob {
-	// sort by creation timestamp
-	// equal = original order
-	SortQueueJobs(notRunningJobs)
+	SortQueueJobsByCreationTime(notRunningJobs)
 
 	numberToStart := parallelism - numberOfRunning
 
 	jobsLength := len(notRunningJobs)
 
 	var startJobs []*queuejob.QueueJob
+
 	if jobsLength > 0 {
 		for i := int64(0); i < numberToStart; i++ {
 			if int64(jobsLength) > i {
@@ -114,7 +113,7 @@ func GetToStartJob(notRunningJobs []*queuejob.QueueJob, parallelism int64, numbe
 	return startJobs
 }
 
-func SortQueueJobs(notRunningJobs []*queuejob.QueueJob) {
+func SortQueueJobsByCreationTime(notRunningJobs []*queuejob.QueueJob) {
 	sort.SliceStable(notRunningJobs, func(i, j int) bool {
 		if notRunningJobs[j].ObjectMeta.CreationTimestamp.Time.Unix() == notRunningJobs[i].ObjectMeta.CreationTimestamp.Time.Unix() {
 			return strings.Compare(notRunningJobs[j].ObjectMeta.Name, notRunningJobs[i].ObjectMeta.Name) > 0
