@@ -24,10 +24,30 @@ cd ..
 #kubectl --kubeconfig ${CONFIG} apply -f ./examples/timeout-on-queue-settings.yaml
 
 #kubectl --kubeconfig ${CONFIG} apply -f ./examples/templates-on-timeout.yaml
-kubectl --kubeconfig ${CONFIG} apply -f ./examples/templates-on-success.yaml
+#kubectl --kubeconfig ${CONFIG} apply -f ./examples/templates-on-success.yaml
 #kubectl --kubeconfig ${CONFIG} apply -f ./examples/templates-on-failure.yaml
 
-kubectl --kubeconfig ${CONFIG} apply -f ./examples/multi-completions.yaml
+#kubectl --kubeconfig ${CONFIG} apply -f ./examples/multi-completions.yaml
+
+
+#kubectl --kubeconfig ${CONFIG} apply -f ./examples/markcomplete/job.yaml
+#sleep 10
+#kubectl --kubeconfig ${CONFIG} apply -f ./examples/markcomplete/mark-complete.yaml
+
+#kubectl --kubeconfig ${CONFIG} create -f ./examples/markcomplete-in-parts/job.yaml
+#kubectl --kubeconfig ${CONFIG} create -f ./examples/markcomplete-in-parts/job.yaml
+
+#sleep 5
+#kubectl --kubeconfig ${CONFIG} apply -f ./examples/markcomplete-in-parts/mark-complete-part-one.yaml
+#sleep 5
+#kubectl --kubeconfig ${CONFIG} apply -f ./examples/markcomplete-in-parts/mark-complete-part-two.yaml
+#kubectl --kubeconfig ${CONFIG} apply -f ./examples/markcomplete-in-parts/mark-complete-part-three.yaml
+
+
+
+kubectl --kubeconfig ${CONFIG} create -f ./examples/markcomplete-failure/job.yaml
+kubectl --kubeconfig ${CONFIG} create -f ./examples/markcomplete-failure/mark-complete.yaml
+
 
 # test getting from queue settings
 #helm template ./examples/queue-chart/ \

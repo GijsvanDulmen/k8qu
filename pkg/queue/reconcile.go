@@ -13,18 +13,7 @@ func (q *Queue) Reconcile(jobUpdater JobUpdater) {
 		}
 		// part based completion
 		if len(jb.Spec.NeedsCompletedParts) > 0 {
-			missesOnePart := false
-			for _, completedPart := range jb.Spec.NeedsCompletedParts {
-				if value, ok := jb.Spec.CompletedParts[completedPart]; ok {
-					if !value {
-						missesOnePart = true
-					}
-				} else {
-					missesOnePart = true
-				}
-			}
-
-			if !missesOnePart {
+			if jb.HasAllCompletedParts() {
 				jb.MarkCompleted()
 				err := jobUpdater.UpdateJobForCompletion(jb)
 				if err != nil {
@@ -68,6 +57,33 @@ func (q *Queue) Reconcile(jobUpdater JobUpdater) {
 		q.DebugLog("could not process for completion to be deleted")
 		q.DebugErr(err)
 		return
+	}
+
+	// remaining could be completed with mark queuejob completed
+	// but only if parallism is one
+	if q.Settings.GetParallelism() == 1 {
+		if len(q.MarkQueueJobComplete) > 0 {
+			// get the first one - don't sort
+			// this is random
+			markQueueJobComplete := q.MarkQueueJobComplete[0]
+
+			toBeDoneJobs, err = ProcessForMarkQueueJobCompletedJobs(toBeDoneJobs, jobUpdater, markQueueJobComplete)
+			if err != nil {
+				q.DebugLog("could not process for mark queuejob completed")
+				q.DebugErr(err)
+				return
+			}
+
+			// remove all mark queue job complete
+			for i := range q.MarkQueueJobComplete {
+				err := jobUpdater.DeleteMarkQueueJobComplete(q.MarkQueueJobComplete[i])
+				if err != nil {
+					q.DebugLog("could not process for mark queuejob completed")
+					q.DebugErr(err)
+					return
+				}
+			}
+		}
 	}
 
 	log.Debug().Msgf("%s - jobs still running or need to run %d", q.Name, len(toBeDoneJobs))

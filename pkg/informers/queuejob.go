@@ -1,4 +1,4 @@
-package informer
+package informers
 
 import (
 	"k8qu/pkg/apis/k8qu/v1alpha1/queuejob"
@@ -11,7 +11,7 @@ import (
 	"time"
 )
 
-func (informer *QueueJobInformer) WatchJob() (cache.Store, cache.Controller) {
+func (informer *Informers) WatchJob() (cache.Store, cache.Controller) {
 	store, controller := cache.NewInformer(
 		&cache.ListWatch{
 			ListFunc: func(lo metav1.ListOptions) (result runtime.Object, err error) {
@@ -45,34 +45,30 @@ func (informer *QueueJobInformer) WatchJob() (cache.Store, cache.Controller) {
 	return store, controller
 }
 
-func (informer *QueueJobInformer) ReconcileJob(cs *queuejob.QueueJob) {
-	if cs.ObjectMeta.DeletionTimestamp.IsZero() {
-		if !controllerutil.ContainsFinalizer(cs, finalizerName) {
-			LogForJob(*cs, "adding finalizer")
-			controllerutil.AddFinalizer(cs, finalizerName)
+func (informer *Informers) ReconcileJob(qj *queuejob.QueueJob) {
+	if qj.ObjectMeta.DeletionTimestamp.IsZero() {
+		if !controllerutil.ContainsFinalizer(qj, finalizerName) {
+			LogForJob(*qj, "adding finalizer")
+			controllerutil.AddFinalizer(qj, finalizerName)
 
-			_, err := informer.clientSet.QueueJob(cs.ObjectMeta.Namespace).Update(cs, metav1.UpdateOptions{})
+			_, err := informer.clientSet.QueueJob(qj.ObjectMeta.Namespace).Update(qj, metav1.UpdateOptions{})
 			if err != nil {
-				LogForJob(*cs, err.Error())
+				LogForJob(*qj, err.Error())
 			}
 			return
 		}
-		informer.jobReconcileRequest(cs.GetQueueName())
+		informer.jobReconcileRequest(qj.GetQueueName())
 	} else {
-		if controllerutil.ContainsFinalizer(cs, finalizerName) {
-			controllerutil.RemoveFinalizer(cs, finalizerName)
+		if controllerutil.ContainsFinalizer(qj, finalizerName) {
+			controllerutil.RemoveFinalizer(qj, finalizerName)
 
-			LogForJob(*cs, "removing finalizer")
+			LogForJob(*qj, "removing finalizer")
 
-			_, err := informer.clientSet.QueueJob(cs.ObjectMeta.Namespace).Update(cs, metav1.UpdateOptions{})
+			_, err := informer.clientSet.QueueJob(qj.ObjectMeta.Namespace).Update(qj, metav1.UpdateOptions{})
 			if err != nil {
-				LogForJob(*cs, "could not remove finalizer")
-				LogForJob(*cs, err.Error())
+				LogForJob(*qj, "could not remove finalizer")
+				LogForJob(*qj, err.Error())
 			}
 		}
 	}
-}
-
-func LogForJob(j queuejob.QueueJob, s string) {
-	log.Debug().Msgf("job %s/%s log: %s", j.Namespace, j.Name, s)
 }

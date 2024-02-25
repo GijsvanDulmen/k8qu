@@ -2,12 +2,21 @@ package queue
 
 import (
 	"errors"
+	"k8qu/pkg/apis/k8qu/v1alpha1/markqueuejobcomplete"
 	"k8qu/pkg/apis/k8qu/v1alpha1/queuejob"
 	"testing"
 )
 
 type JobUpdaterMock struct {
 	Result error
+}
+
+func (j *JobUpdaterMock) UpdateJob(jb *queuejob.QueueJob) error {
+	return j.Result
+}
+
+func (j *JobUpdaterMock) DeleteMarkQueueJobComplete(jb *markqueuejobcomplete.MarkQueueJobComplete) error {
+	return j.Result
 }
 
 func (j *JobUpdaterMock) UpdateJobForCompletion(jb *queuejob.QueueJob) error {

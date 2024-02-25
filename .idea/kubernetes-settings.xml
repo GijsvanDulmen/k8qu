@@ -8,6 +8,9 @@
       <SpecSource>
         <option name="pathOrUrl" value="$PROJECT_DIR$/helm/crds/queuejob.yaml" />
       </SpecSource>
+      <SpecSource>
+        <option name="pathOrUrl" value="$PROJECT_DIR$/helm/crds/markqueuejobcomplete.yaml" />
+      </SpecSource>
     </specSources>
   </component>
 </project>

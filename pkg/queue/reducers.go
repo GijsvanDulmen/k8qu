@@ -1,6 +1,9 @@
 package queue
 
-import "k8qu/pkg/apis/k8qu/v1alpha1/queuejob"
+import (
+	"k8qu/pkg/apis/k8qu/v1alpha1/markqueuejobcomplete"
+	"k8qu/pkg/apis/k8qu/v1alpha1/queuejob"
+)
 
 func ProcessForCompletedJobs(jobs []*queuejob.QueueJob, jobUpdater JobUpdater, settings Settings) ([]*queuejob.QueueJob, error) {
 	return ReduceJobs(jobs, func(jb queuejob.QueueJob) (bool, error) {
@@ -15,6 +18,57 @@ func ProcessForCompletedJobs(jobs []*queuejob.QueueJob, jobUpdater JobUpdater, s
 				}
 			}
 			return false, err
+		}
+		return true, nil
+	})
+}
+
+func ProcessForMarkQueueJobCompletedJobs(jobs []*queuejob.QueueJob, jobUpdater JobUpdater, markQueueJobComplete *markqueuejobcomplete.MarkQueueJobComplete) ([]*queuejob.QueueJob, error) {
+	markQueueProcessed := false
+
+	return ReduceJobs(jobs, func(jb queuejob.QueueJob) (bool, error) {
+		if markQueueProcessed {
+			return false, nil
+		}
+
+		if jb.IsRunning() {
+			if markQueueJobComplete.Spec.Completed != nil {
+				jb.MarkCompleted()
+				err := jobUpdater.UpdateJobForCompletion(&jb)
+				if err != nil {
+					return true, err
+				}
+				markQueueProcessed = true
+			} else if markQueueJobComplete.Spec.Failed != nil {
+				jb.MarkFailed()
+				err := jobUpdater.UpdateJobForFailure(&jb)
+				if err != nil {
+					return true, err
+				}
+				markQueueProcessed = true
+			} else if len(markQueueJobComplete.Spec.CompletedParts) > 0 {
+				// mark with parts
+				for _, v := range markQueueJobComplete.Spec.CompletedParts {
+					if jb.Spec.CompletedParts == nil {
+						jb.Spec.CompletedParts = map[string]bool{}
+					}
+					jb.Spec.CompletedParts[v] = true
+				}
+
+				if jb.HasAllCompletedParts() {
+					jb.MarkCompleted()
+					err := jobUpdater.UpdateJobForCompletion(&jb)
+					if err != nil {
+						return false, err
+					}
+				} else {
+					err := jobUpdater.UpdateJob(&jb)
+					if err != nil {
+						return true, err
+					}
+				}
+				markQueueProcessed = true
+			}
 		}
 		return true, nil
 	})

@@ -18,6 +18,20 @@ func (jb *QueueJob) IsCompleted() bool {
 	return jb.Status.CompletedAt != nil
 }
 
+func (jb *QueueJob) HasAllCompletedParts() bool {
+	missesOnePart := false
+	for _, completedPart := range jb.Spec.NeedsCompletedParts {
+		if value, ok := jb.Spec.CompletedParts[completedPart]; ok {
+			if !value {
+				missesOnePart = true
+			}
+		} else {
+			missesOnePart = true
+		}
+	}
+	return !missesOnePart
+}
+
 func (jb *QueueJob) IsCompletedAndCanBeDeleted(ttsSuccess string, ttsFailed string) (error, bool) {
 	ttlAfterSuccessfulCompletion := jb.Spec.TtlAfterSuccessfulCompletion
 	if jb.Spec.TtlAfterSuccessfulCompletion != "" {

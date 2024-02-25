@@ -3,11 +3,12 @@ package main
 import (
 	"flag"
 	v1alpha12 "k8qu/pkg/apis/k8qu/v1alpha1"
+	"k8qu/pkg/apis/k8qu/v1alpha1/markqueuejobcomplete"
 	"k8qu/pkg/apis/k8qu/v1alpha1/queuejob"
 	"k8qu/pkg/apis/k8qu/v1alpha1/queuesettings"
 	"k8qu/pkg/clientset"
 	"k8qu/pkg/clientset/v1alpha1"
-	"k8qu/pkg/informer"
+	"k8qu/pkg/informers"
 	logger "k8qu/pkg/log"
 	"k8qu/pkg/queue"
 	"k8s.io/client-go/discovery"
@@ -49,14 +50,7 @@ func main() {
 
 	_ = v1alpha12.AddToScheme(scheme.Scheme)
 
-	jobClientSet, err := v1alpha1.NewForQueueJob(restConfig)
-	if err != nil {
-		log.Error().Err(err)
-		os.Exit(3)
-		return
-	}
-
-	queueSettingsClientSet, err := v1alpha1.NewForQueueSettings(restConfig)
+	jobClientSet, err := v1alpha1.NewForK8Qu(restConfig)
 	if err != nil {
 		log.Error().Err(err)
 		os.Exit(3)
@@ -94,6 +88,8 @@ func main() {
 	var jobController *cache.Controller
 	var qsStore *cache.Store
 	var qsController *cache.Controller
+	var mqjcStore *cache.Store
+	var mqjcController *cache.Controller
 
 	reconcileChannel := make(chan string)
 
@@ -104,21 +100,20 @@ func main() {
 		}()
 	}
 
-	// job informer
-	jobInformer := informer.NewQueueJobInformer(jobClientSet, coreClientSet, func(queue string) {
+	newInformers := informers.NewInformers(jobClientSet, coreClientSet, func(queue string) {
 		reconcileRequest(queue)
 	})
-	js, jc := jobInformer.WatchJob()
+	js, jc := newInformers.WatchJob()
 	jobStore = &js
 	jobController = &jc
 
-	// queue settings informer
-	queueSettingsInformer := informer.NewQueueSettingsInformer(queueSettingsClientSet, coreClientSet, func(queue string) {
-		reconcileRequest(queue)
-	})
-	qss, qsc := queueSettingsInformer.WatchQueueSettings()
+	qss, qsc := newInformers.WatchQueueSettings()
 	qsStore = &qss
 	qsController = &qsc
+
+	mqjcs, mqjcc := newInformers.WatchMarkQueueJobComplete()
+	mqjcStore = &mqjcs
+	mqjcController = &mqjcc
 
 	go func() {
 		for {
@@ -142,6 +137,11 @@ func main() {
 			continue
 		}
 
+		if !(*mqjcController).HasSynced() {
+			log.Debug().Msg("waiting for full sync of mark queue job complete")
+			continue
+		}
+
 		log.Debug().Msgf("reconciling '%s'", reconcileQueue)
 
 		queues := queue.NewQueues()
@@ -159,6 +159,16 @@ func main() {
 				queues.AddJob(castedJob)
 			} else if reconcileQueue == castedJob.GetQueueName() {
 				queues.AddJob(castedJob)
+			}
+		}
+
+		mqjcFromStore := (*mqjcStore).List()
+		for i := range mqjcFromStore {
+			castedMqjc := mqjcFromStore[i].(*markqueuejobcomplete.MarkQueueJobComplete) // safe cast
+			if reconcileQueue == "" {
+				queues.AddMarkQueueJobComplete(castedMqjc)
+			} else if reconcileQueue == castedMqjc.GetQueueName() {
+				queues.AddMarkQueueJobComplete(castedMqjc)
 			}
 		}
 

@@ -1,0 +1,8 @@
+apiVersion: k8qu.io/v1alpha1
+kind: MarkQueueJobComplete
+metadata:
+  name: mark-complete-in-parts-one
+spec:
+  queue: "mark-complete-in-parts"
+  completedParts:
+    - a

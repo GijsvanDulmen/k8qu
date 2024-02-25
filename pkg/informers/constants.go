@@ -1,4 +1,4 @@
-package informer
+package informers
 
 import logger "k8qu/pkg/log"
 

@@ -161,3 +161,72 @@ func TestIsTooLongInQueueFalse(t *testing.T) {
 		t.Fail()
 	}
 }
+
+func TestQueueJob_HasAllCompletedParts(t *testing.T) {
+	type fields struct {
+		TypeMeta   metav1.TypeMeta
+		ObjectMeta metav1.ObjectMeta
+		Spec       Spec
+		Status     Status
+	}
+	tests := []struct {
+		name   string
+		fields fields
+		want   bool
+	}{
+		{name: "has all completed parts", fields: struct {
+			TypeMeta   metav1.TypeMeta
+			ObjectMeta metav1.ObjectMeta
+			Spec       Spec
+			Status     Status
+		}{
+			TypeMeta:   metav1.TypeMeta{},
+			ObjectMeta: metav1.ObjectMeta{},
+			Spec: Spec{NeedsCompletedParts: []string{"a", "b"}, CompletedParts: map[string]bool{
+				"a": true,
+				"b": true,
+			}},
+			Status: Status{},
+		}, want: true},
+		{name: "has all not all completed parts", fields: struct {
+			TypeMeta   metav1.TypeMeta
+			ObjectMeta metav1.ObjectMeta
+			Spec       Spec
+			Status     Status
+		}{
+			TypeMeta:   metav1.TypeMeta{},
+			ObjectMeta: metav1.ObjectMeta{},
+			Spec: Spec{NeedsCompletedParts: []string{"a", "b"}, CompletedParts: map[string]bool{
+				"a": true,
+			}},
+			Status: Status{},
+		}, want: false},
+		{name: "has all many completed parts but not correct", fields: struct {
+			TypeMeta   metav1.TypeMeta
+			ObjectMeta metav1.ObjectMeta
+			Spec       Spec
+			Status     Status
+		}{
+			TypeMeta:   metav1.TypeMeta{},
+			ObjectMeta: metav1.ObjectMeta{},
+			Spec: Spec{NeedsCompletedParts: []string{"a", "b"}, CompletedParts: map[string]bool{
+				"a": true,
+				"c": true,
+			}},
+			Status: Status{},
+		}, want: false},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			jb := &QueueJob{
+				TypeMeta:   tt.fields.TypeMeta,
+				ObjectMeta: tt.fields.ObjectMeta,
+				Spec:       tt.fields.Spec,
+				Status:     tt.fields.Status,
+			}
+			if got := jb.HasAllCompletedParts(); got != tt.want {
+				t.Errorf("HasAllCompletedParts() = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}

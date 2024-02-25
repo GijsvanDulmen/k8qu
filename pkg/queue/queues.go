@@ -1,6 +1,7 @@
 package queue
 
 import (
+	"k8qu/pkg/apis/k8qu/v1alpha1/markqueuejobcomplete"
 	"k8qu/pkg/apis/k8qu/v1alpha1/queuejob"
 )
 
@@ -24,6 +25,14 @@ func (q *Queues) AddJob(job *queuejob.QueueJob) {
 		q.Queues[queueName] = NewQueue(queueName, defaultSettings)
 	}
 	q.Queues[queueName].Add(job)
+}
+
+func (q *Queues) AddMarkQueueJobComplete(mqjc *markqueuejobcomplete.MarkQueueJobComplete) {
+	queueName := mqjc.GetQueueName()
+	if _, ok := q.Queues[queueName]; !ok {
+		q.Queues[queueName] = NewQueue(queueName, defaultSettings)
+	}
+	q.Queues[queueName].AddMarkQueueJobComplete(mqjc)
 }
 
 func (q *Queues) Reconcile(jobUpdater JobUpdater) {

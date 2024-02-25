@@ -2,6 +2,7 @@ package v1alpha1
 
 import (
 	k8qucontroller "k8qu/pkg/apis/k8qu"
+	"k8qu/pkg/apis/k8qu/v1alpha1/markqueuejobcomplete"
 	"k8qu/pkg/apis/k8qu/v1alpha1/queuejob"
 	"k8qu/pkg/apis/k8qu/v1alpha1/queuesettings"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -30,6 +31,8 @@ func addKnownTypes(scheme *runtime.Scheme) error {
 		&queuejob.QueueJobList{},
 		&queuesettings.QueueSettings{},
 		&queuesettings.QueueSettingsList{},
+		&markqueuejobcomplete.MarkQueueJobComplete{},
+		&markqueuejobcomplete.MarkQueueJobCompleteList{},
 	)
 	metav1.AddToGroupVersion(scheme, SchemeGroupVersion)
 	return nil

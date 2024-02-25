@@ -1,0 +1,15 @@
+apiVersion: k8qu.io/v1alpha1
+kind: QueueJob
+metadata:
+  name: mark-complete
+spec:
+  queue: "mark-complete"
+  executionTimeout: "300s"
+
+  templates:
+  - apiVersion: v1
+    kind: ConfigMap
+    metadata:
+      generateName: configmap-b
+    data:
+      a: b

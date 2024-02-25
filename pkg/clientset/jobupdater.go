@@ -2,6 +2,7 @@ package clientset
 
 import (
 	"github.com/rs/zerolog"
+	"k8qu/pkg/apis/k8qu/v1alpha1/markqueuejobcomplete"
 	"k8qu/pkg/apis/k8qu/v1alpha1/queuejob"
 	"k8qu/pkg/clientset/v1alpha1"
 	logger "k8qu/pkg/log"
@@ -17,6 +18,14 @@ type QueueJobUpdater struct {
 	Client          *v1alpha1.Client
 	ServerResources discovery.ServerResourcesInterface
 	Dynamic         dynamic.Interface
+}
+
+func (j *QueueJobUpdater) DeleteMarkQueueJobComplete(jb *markqueuejobcomplete.MarkQueueJobComplete) error {
+	err := j.Client.MarkQueueJobComplete(jb.Namespace).Delete(jb, metav1.DeleteOptions{})
+	if err != nil {
+		return err
+	}
+	return nil
 }
 
 func (j *QueueJobUpdater) UpdateJobForCompletion(jb *queuejob.QueueJob) error {

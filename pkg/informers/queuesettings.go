@@ -1,4 +1,4 @@
-package informer
+package informers
 
 import (
 	"k8qu/pkg/apis/k8qu/v1alpha1/queuesettings"
@@ -11,7 +11,7 @@ import (
 	"time"
 )
 
-func (informer *QueueSettingsInformer) WatchQueueSettings() (cache.Store, cache.Controller) {
+func (informer *Informers) WatchQueueSettings() (cache.Store, cache.Controller) {
 	store, controller := cache.NewInformer(
 		&cache.ListWatch{
 			ListFunc: func(lo metav1.ListOptions) (result runtime.Object, err error) {
@@ -46,34 +46,30 @@ func (informer *QueueSettingsInformer) WatchQueueSettings() (cache.Store, cache.
 	return store, controller
 }
 
-func (informer *QueueSettingsInformer) ReconcileQueueSetting(cs *queuesettings.QueueSettings) {
-	if cs.ObjectMeta.DeletionTimestamp.IsZero() {
-		if !controllerutil.ContainsFinalizer(cs, finalizerName) {
-			LogForQueueSetttings(*cs, "adding finalizer")
-			controllerutil.AddFinalizer(cs, finalizerName)
+func (informer *Informers) ReconcileQueueSetting(qs *queuesettings.QueueSettings) {
+	if qs.ObjectMeta.DeletionTimestamp.IsZero() {
+		if !controllerutil.ContainsFinalizer(qs, finalizerName) {
+			LogForQueueSetttings(*qs, "adding finalizer")
+			controllerutil.AddFinalizer(qs, finalizerName)
 
-			_, err := informer.clientSet.QueueSettings(cs.ObjectMeta.Namespace).Update(cs, metav1.UpdateOptions{})
+			_, err := informer.clientSet.QueueSettings(qs.ObjectMeta.Namespace).Update(qs, metav1.UpdateOptions{})
 			if err != nil {
-				LogForQueueSetttings(*cs, err.Error())
+				LogForQueueSetttings(*qs, err.Error())
 			}
 			return
 		}
 
-		informer.jobReconcileRequest(cs.Name)
+		informer.jobReconcileRequest(qs.Name)
 	} else {
-		if controllerutil.ContainsFinalizer(cs, finalizerName) {
-			LogForQueueSetttings(*cs, "removing finalizer")
-			controllerutil.RemoveFinalizer(cs, finalizerName)
+		if controllerutil.ContainsFinalizer(qs, finalizerName) {
+			LogForQueueSetttings(*qs, "removing finalizer")
+			controllerutil.RemoveFinalizer(qs, finalizerName)
 
-			_, err := informer.clientSet.QueueSettings(cs.ObjectMeta.Namespace).Update(cs, metav1.UpdateOptions{})
+			_, err := informer.clientSet.QueueSettings(qs.ObjectMeta.Namespace).Update(qs, metav1.UpdateOptions{})
 			if err != nil {
-				LogForQueueSetttings(*cs, "could not remove finalizer")
-				LogForQueueSetttings(*cs, err.Error())
+				LogForQueueSetttings(*qs, "could not remove finalizer")
+				LogForQueueSetttings(*qs, err.Error())
 			}
 		}
 	}
-}
-
-func LogForQueueSetttings(qs queuesettings.QueueSettings, s string) {
-	log.Debug().Msgf("queue setting %s/%s log: %s", qs.Namespace, qs.Name, s)
 }

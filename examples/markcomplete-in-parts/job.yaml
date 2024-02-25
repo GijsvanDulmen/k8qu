@@ -1,0 +1,18 @@
+apiVersion: k8qu.io/v1alpha1
+kind: QueueJob
+metadata:
+  generateName: mark-complete-in-parts
+spec:
+  queue: "mark-complete-in-parts"
+  executionTimeout: "300s"
+  needsCompletedParts:
+    - a
+    - b
+
+  templates:
+  - apiVersion: v1
+    kind: ConfigMap
+    metadata:
+      generateName: configmap-b
+    data:
+      a: b
