@@ -1,7 +1,7 @@
 image:
   registry: "ghcr.io"
   repository: "gijsvandulmen/k8qu"
-  tag: "1.1"
+  tag: "1.2"
 
   pullPolicy: Always
 
@@ -11,8 +11,8 @@ resourcesToCreate: []
 
 resources:
   limits:
-    memory: 500Mi
-    cpu: 1000m
+    memory: 300Mi
+    cpu: 500m
   requests:
     memory: 50Mi
-    cpu: 30m
+    cpu: 100m
