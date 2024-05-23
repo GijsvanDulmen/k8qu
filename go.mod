@@ -5,7 +5,7 @@ module k8qu
 go 1.21
 
 require (
-	github.com/rs/zerolog v1.32.0
+	github.com/rs/zerolog v1.33.0
 	github.com/stretchr/testify v1.9.0
 	k8s.io/apimachinery v0.29.2
 	k8s.io/client-go v0.29.2
