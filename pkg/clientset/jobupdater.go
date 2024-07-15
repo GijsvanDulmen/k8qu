@@ -74,6 +74,12 @@ func (j *QueueJobUpdater) StartJob(nextJob *queuejob.QueueJob) bool {
 		log.WithLevel(zerolog.ErrorLevel).Msgf("%s - job marked as running but could not create resources %s", nextJob.GetQueueName(), nextJob.Name)
 		log.WithLevel(zerolog.ErrorLevel).Msg(err.Error())
 		log.WithLevel(zerolog.ErrorLevel).Err(err)
+
+		nextJob.MarkFailedWithMessage(err.Error())
+		err := j.UpdateJob(nextJob)
+		if err != nil {
+			return true
+		}
 		return false
 	}
 	return false

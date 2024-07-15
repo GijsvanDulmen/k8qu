@@ -101,7 +101,8 @@ func (q *Queue) Reconcile(jobUpdater JobUpdater) {
 		toStartJobs := GetToStartJob(notRunningJobs, q.Settings.GetParallelism(), numberOfRunning)
 
 		for i := range toStartJobs {
-			if jobUpdater.StartJob(notRunningJobs[i]) {
+			jobFailedToProcess := jobUpdater.StartJob(notRunningJobs[i])
+			if jobFailedToProcess {
 				return // job failed to start
 			}
 		}
