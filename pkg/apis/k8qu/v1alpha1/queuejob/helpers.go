@@ -151,11 +151,15 @@ func (jb *QueueJob) MarkCompleted() {
 }
 
 func (jb *QueueJob) MarkFailed() {
+	jb.MarkFailedWithMessage(markedFailedMessage)
+}
+
+func (jb *QueueJob) MarkFailedWithMessage(message string) {
 	now := time.Now()
 	falseBool := false
 	jb.Status.CompletedAt = &now
 	jb.Status.IsSuccessful = &falseBool
-	jb.Status.Outcome = &markedFailedMessage
+	jb.Status.Outcome = &message
 }
 
 func (jb *QueueJob) GetQueueName() string {
