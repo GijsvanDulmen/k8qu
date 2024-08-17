@@ -1,7 +1,7 @@
 image:
   registry: "ghcr.io"
   repository: "gijsvandulmen/k8qu"
-  tag: "1.3"
+  tag: "1.4"
 
   pullPolicy: Always
 
